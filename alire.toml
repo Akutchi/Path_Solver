@@ -1,0 +1,15 @@
+name = "path_solver"
+description = "Implementation of dijkstra's algorithm with visualization"
+version = "0.1.0-dev"
+
+authors = ["Kaitlyn"]
+maintainers = ["Kaitlyn <kaitlyn.buffler@tutamail.com>"]
+maintainers-logins = ["Akutchi"]
+licenses = "MIT OR Apache-2.0 WITH LLVM-exception"
+website = ""
+tags = ["dijkstra", "gtkada", "gui", "ada"]
+
+executables = ["path_solver"]
+
+[[depends-on]]
+gtkada = "^22.0.0"
