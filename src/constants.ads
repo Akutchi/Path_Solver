@@ -12,6 +12,9 @@ package Constants is
 
    end record;
 
-   Green : constant Gdk_RGBA := (1.0, 0.0, 0.0, 1.0);
+   Plain   : constant Gdk_RGBA := (0.13, 0.71, 0.40, 1.0); -- green
+   Moutain : constant Gdk_RGBA := (0.71, 0.44, 0.13, 1.0); -- maroon
+   Water   : constant Gdk_RGBA := (0.06, 0.68, 0.87, 1.0); -- blue
+   Ocean   : constant Gdk_RGBA := (0.06, 0.44, 0.87, 1.0); -- deep blue
 
 end Constants;

@@ -16,12 +16,11 @@ package Canvas is
 
    procedure Gtk_New (Canvas : out Image_Canvas);
 
-   procedure Initial_Setup (Canvas : access Interactive_Canvas_Record'Class);
-
    type Display_Item_Record is new Canvas_Item_Record with record
 
       Canvas : Interactive_Canvas;
       Color  : Gdk_RGBA;
+      x, y   : Gdouble;
       W, H   : Gint;
 
    end record;
@@ -30,5 +29,7 @@ package Canvas is
 
    overriding procedure Draw
      (Item : access Display_Item_Record; Cr : Cairo_Context);
+
+   procedure Initial_Setup (Canvas : access Interactive_Canvas_Record'Class);
 
 end Canvas;

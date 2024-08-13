@@ -15,7 +15,7 @@ begin
 
    Main_Windows.Gtk_New (Win);
    Win.Set_Position (Win_Pos_Center);
-   Win.Set_Resizable (False);
+   --  Win.Set_Resizable (False);
 
    Canvas.Gtk_New (Main_Canvas);
    Realize (Main_Canvas);
