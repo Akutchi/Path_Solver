@@ -5,8 +5,16 @@ package Constants is
 
    type Window_Configuration is record
 
-      Width       : Gint := 600;
-      Height      : Gint := 600;
+      Width  : Gint := 660;
+      Height : Gint := 660;
+
+   end record;
+
+   type Canvas_Configuration is record
+
+      Width  : Gint := 660;
+      Height : Gint := 600;
+
       Case_Width  : Gint := 25;
       Case_Height : Gint := 25;
 

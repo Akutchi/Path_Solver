@@ -32,6 +32,8 @@ package body Main_Windows is
 
       Gtk.Window.Initialize (Win, Window_Toplevel);
       Set_Default_Size (Win, Win_Config.Width, Win_Config.Height);
+      Set_Position (Win, Win_Pos_Center);
+      Set_Resizable (Win, False);
 
       Window_Cb.Connect
         (Win, "destroy", Window_Cb.To_Marshaller (Exit_Main'Access));

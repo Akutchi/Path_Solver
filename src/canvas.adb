@@ -15,7 +15,7 @@ package body Canvas is
       Set_Source_RGBA
         (Cr, Item.Color.Red, Item.Color.Green, Item.Color.Blue,
          Item.Color.Alpha);
-      Cairo.Rectangle (Cr, 0.0, 0.0, Gdouble (Item.W), Gdouble (Item.H));
+      Cairo.Rectangle (Cr, 0.5, 0.5, Gdouble (Item.W), Gdouble (Item.H));
       Cairo.Fill (Cr);
 
    end Draw;
@@ -29,14 +29,14 @@ package body Canvas is
       Canvas : access Interactive_Canvas_Record'Class)
    is
 
-      Win_Config : Window_Configuration;
+      Can_Config : Canvas_Configuration;
 
    begin
 
       Item.Canvas := Interactive_Canvas (Canvas);
       Item.Color  := Plain;
-      Item.W      := Win_Config.Case_Width;
-      Item.H      := Win_Config.Case_Height;
+      Item.W      := Can_Config.Case_Width;
+      Item.H      := Can_Config.Case_Height;
 
       Set_Screen_Size (Item, Item.W, Item.H);
 
@@ -60,24 +60,30 @@ package body Canvas is
 
    procedure Initial_Setup (Canvas : access Interactive_Canvas_Record'Class) is
 
-      Win_Config    : Window_Configuration;
-      Width_Number  : Gint := Win_Config.Width / Win_Config.Case_Width;
-      Height_Number : Gint := Win_Config.Height / Win_Config.Case_Height;
-      Case_Number   : Gint := Width_Number * Height_Number - 2; -- why Idfk
+      Win_Config : Window_Configuration;
+      Can_Config : Canvas_Configuration;
+
+      Width_Nb    : constant Gint := Can_Config.Width / Can_Config.Case_Width;
+      Height_Nb : constant Gint := Can_Config.Height / Can_Config.Case_Height;
+      Case_Number : constant Gint := Width_Nb * Height_Nb;
 
    begin
+
+      Put_Line (Gint'Image (Case_Number));
 
       for N in 0 .. Case_Number loop
 
          declare
             Item_n : constant Display_Item := new Display_Item_Record;
-            I      : Gint                  := N / Win_Config.Case_Width;
-            J      : Gint                  := N mod Win_Config.Case_Height;
+            I      : constant Gint         := N / Can_Config.Case_Width;
+            J      : constant Gint         := N mod Can_Config.Case_Height;
          begin
             Initialize (Item_n, Canvas);
             Put
-              (Canvas, Item_n, I * Win_Config.Case_Width,
-               J * Win_Config.Case_Height);
+              (Canvas, Item_n, I * Can_Config.Case_Width,
+               J * Can_Config.Case_Height);
+
+            Put_Line (Gint'Image (I) & " " & Gint'Image (J));
          end;
 
       end loop;
