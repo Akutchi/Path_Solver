@@ -2,7 +2,6 @@ with Gtk.Main; use Gtk.Main;
 
 with Main_Windows; use Main_Windows;
 with Canvas;       use Canvas;
-with Constants;    use Constants;
 
 procedure Path_Solver is
 
@@ -21,7 +20,6 @@ begin
 
    Add (Win, Main_Canvas);
 
-   Update (Main_Canvas, Moutain, 2, 2);
    Show_All (Win);
 
    Main;
