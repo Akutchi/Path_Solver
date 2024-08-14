@@ -1,18 +1,18 @@
---------------------------------------------------------------------------------
---                                                                            --
---                                                                            --
--- This file, and the folder in general is my ada implementation of a         --
--- minecraft-like world generator [1].                                        --
---                                                                            --
--- Each layer is a procedure which act on an image inside the layer_templates --
--- folder. It takes in an In_File and output and Out_File. The only exception --
--- being the Island layer which create the first map.                         --
--- Each Stack is a list of procedure.                                         --
---                                                                            --
---                                                                            --
--- [1] https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/     --
---                                                                            --
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+--                                                                           --
+--                                                                           --
+-- This file, and the folder in general is my ada implementation of a        --
+-- minecraft-like world generator [1].                                       --
+--                                                                           --
+-- Each layer is a procedure which act on an image inside the                --
+-- layer_templates folder. It takes in an In_File and output and Out_File.   --
+-- The only exception being the Island layer which create the first map.     --
+-- Each Stack is a list of procedure.                                        --
+--                                                                           --
+--                                                                           --
+-- [1] https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/    --
+--                                                                           --
+-------------------------------------------------------------------------------
 
 with Gdk.RGBA; use Gdk.RGBA;
 

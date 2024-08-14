@@ -1,6 +1,9 @@
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with Generation.gtkRGBA_To_IMRGBA; use Generation.gtkRGBA_To_IMRGBA;
+with Generation.Random_Position;   use Generation.Random_Position;
+
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Generation is
 
@@ -56,9 +59,25 @@ package body Generation is
    end Put_Pixel;
 
    procedure Island (In_File : String) is
+
+      Case_Until_End : Natural := Zoom_Levels (0) * Zoom_Levels (0);
+      Result         : Point;
+
    begin
 
       Create_Image (In_File, Zoom_Levels (0));
+
+      Result := Draw_Random_Position (5);
+
+      Put_Line (Pos'Image (Result.X) & " " & Pos'Image (Result.Y));
+
+      Case_Until_End := 0;
+
+      loop
+
+         exit when Case_Until_End = 0;
+
+      end loop;
 
    end Island;
 
