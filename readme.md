@@ -14,11 +14,8 @@ dynamically generated.
 As it is my first time using gtkAda, I extensively relied on
 [the examples](https://github.com/AdaCore/gtkada/tree/master/testgtk) provided.
 
-## Binary
 
-A binary of the project is provided in the ./bin folder
-
-## Configuration (in case you want to modify it)
+## Configuration
 
 ### Introduction
 
@@ -29,7 +26,7 @@ unpack it somewhere. Then, add Alire to the path with
 ```export PATH="<PATH_TO_EXTRACTED>/bin/:$PATH"``` (you can make it permanent
 by placing this in the .profile).
 
-Do not forget to run ```alr with gtkada``` in order to add gtkada as a dependency.
+If you do not have gtkada, alire may ask you to install it.
 
 | ![dependency_graph](./doc/dependency_graph.png) |
 |:--:|

@@ -20,6 +20,8 @@ package Constants is
 
    end record;
 
+   function Case_Number return Integer;
+
    Plain   : constant Gdk_RGBA := (0.13, 0.71, 0.40, 1.0); -- green
    Moutain : constant Gdk_RGBA := (0.71, 0.44, 0.13, 1.0); -- maroon
    Water   : constant Gdk_RGBA := (0.06, 0.68, 0.87, 1.0); -- blue

@@ -3,6 +3,8 @@ with Cairo;         use Cairo;
 with Gtkada.Canvas; use Gtkada.Canvas;
 with Gdk.RGBA;      use Gdk.RGBA;
 
+with Constants; use Constants;
+
 package Canvas is
 
    type Image_Canvas_Record is new Interactive_Canvas_Record with record
@@ -25,11 +27,21 @@ package Canvas is
 
    end record;
 
-   type Display_Item is access all Display_Item_Record'Class;
-
    overriding procedure Draw
      (Item : access Display_Item_Record; Cr : Cairo_Context);
 
+   type Display_Item is access all Display_Item_Record'Class;
+
+   procedure Update
+     (Canvas : access Interactive_Canvas_Record'Class; Color : Gdk_RGBA;
+      I, J   : Gint);
+
    procedure Initial_Setup (Canvas : access Interactive_Canvas_Record'Class);
+private
+
+   procedure Initialize
+     (Item   : access Display_Item_Record'Class;
+      Canvas : access Interactive_Canvas_Record'Class;
+      Color  : Gdk_RGBA := Plain);
 
 end Canvas;
