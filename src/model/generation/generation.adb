@@ -4,7 +4,6 @@ with Ada.Strings.Fixed;     use Ada.Strings.Fixed;
 
 with Generation.gtkRGBA_To_IMRGBA; use Generation.gtkRGBA_To_IMRGBA;
 with Generation.Random_Biome;      use Generation.Random_Biome;
-with Generation.Random_Position;   use Generation.Random_Position;
 with Constants;                    use Constants;
 
 package body Generation is
@@ -102,47 +101,44 @@ package body Generation is
    function Pixel_Is_Transparent
      (Source : String; X, Y : Integer) return Boolean
    is
-      Pixel_Color : String := Get_Pixel_Color (Source, X, Y);
+      Pixel_Color : constant String := Get_Pixel_Color (Source, X, Y);
    begin
 
-      return Pixel_Color = "none";
+      return Pixel_Color = No_Pixel;
 
    end Pixel_Is_Transparent;
 
    procedure Island (Source : String) is
 
-      Case_Until_End : Natural := Zoom_Levels (0) * Zoom_Levels (0);
+      Case_Until_End : constant Natural := Zoom_Levels (0) * Zoom_Levels (0);
       Choice         : Land_Or_Ocean;
-      Coords         : Point;
       Color          : Gdk_RGBA;
 
    begin
 
+      Put_Line (Natural'Image (Case_Until_End));
+
       Create_Image (Source, Zoom_Levels (0));
 
-      loop
+      for k in 0 .. Case_Until_End - 1 loop
 
-         exit when Case_Until_End = 0;
+         declare
 
-         Coords := Draw_Random_Position (Zoom_Levels (0));
+            I : constant Integer := k / Zoom_Levels (0);
+            J : constant Integer := k mod Zoom_Levels (0);
 
-         if Pixel_Is_Transparent
-             (Source, Integer (Coords.X), Integer (Coords.Y))
-         then
+         begin
 
             Choice := Draw_Random_Base_Biome;
 
-            if Choice > 1 then
-               Color := Rocks;
-            else
+            if Choice > 3 then
                Color := Ocean;
+            else
+               Color := Rocks;
             end if;
-            Put_Pixel (Source, Integer (Coords.X), Integer (Coords.Y), Color);
+            Put_Pixel (Source, I, J, Color);
 
-            Case_Until_End := Case_Until_End - 1;
-
-         end if;
-
+         end;
       end loop;
 
    end Island;

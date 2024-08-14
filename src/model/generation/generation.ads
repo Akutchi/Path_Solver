@@ -28,8 +28,9 @@ package Generation is
 
    result : C.int;
 
-   Image_Destination : String := "../layer_templates/";
-   Pixel_Type        : String := "../layer_templates/res.txt";
+   Image_Destination : constant String := "../layer_templates/";
+   Pixel_Type        : constant String := "../layer_templates/res.txt";
+   No_Pixel          : constant String := "none";
 
    type Zoom_Levels_List is array (Natural range 0 .. 5) of Positive;
    Zoom_Levels : constant Zoom_Levels_List := (5, 10, 20, 40, 80, 160);
