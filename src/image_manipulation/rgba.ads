@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
 --                                                                          --
 --                                                                          --
--- Gtk.RGBA and ImageMagick do not have the same way to handle RGB colors.  --
+-- Gtk.RGBA and PIL do not have the same way to handle RGB colors.          --
 -- The first use float (Gdouble) between 0.0 and 1.0 and the second integer --
 -- between 0 and 255.                                                       --
 --                                                                          --
--- Moreover, in order for the ImageMagick bindings to work, one must be     --
+-- Moreover, in order for the python bindings to work, one must be          --
 -- able to transform those value in strings.                                --
 --                                                                          --
 -- In general this package is about all manipulations that are used during  --
@@ -28,9 +28,10 @@ package RGBA is
 
    result : C.int;
 
-   Image_Destination : constant String := "../layer_templates/";
-   Pixel_Type        : constant String := "../layer_templates/res.txt";
-   No_Pixel          : constant String := "none";
+   Image_Destination      : constant String := "../layer_templates/";
+   Pixel_Type             : constant String := "../layer_templates/res.txt";
+   Relative_Path_From_Bin : constant String := "../src/image_manipulation/";
+   No_Pixel               : constant String := "none";
 
    type Array_Gdouble is array (Natural range 0 .. 2) of Gdouble;
 

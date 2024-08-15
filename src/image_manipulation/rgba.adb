@@ -15,12 +15,11 @@ package body RGBA is
       To_String_Zoom : constant String :=
         Trim (Positive'Image (Zoom), Ada.Strings.Left);
 
-      Size_String : constant String := To_String_Zoom & "x" & To_String_Zoom;
-
-      Full_Name : constant String := Image_Destination & Name;
+      Size_String : constant String := To_String_Zoom & " " & To_String_Zoom;
 
       Full_Cmd : constant String :=
-        "convert -size " & Size_String & " xc:transparent " & Full_Name;
+        "python3 " & Relative_Path_From_Bin & "create_image.py " &
+        Image_Destination & " " & Name & " " & Size_String;
 
       create_image_cmd : aliased constant C.char_array := C.To_C (Full_Cmd);
 
@@ -39,15 +38,13 @@ package body RGBA is
 
    procedure Put_Pixel (Name : String; X, Y : Integer; Color : Gdk_RGBA) is
 
-      Full_Name : constant String := Image_Destination & Name;
-
       X_Str : constant String := Trim (Integer'Image (X), Ada.Strings.Left);
       Y_Str : constant String := Trim (Integer'Image (Y), Ada.Strings.Left);
 
       Full_Cmd : constant String :=
-        "convert " & Full_Name & " -fill " & "'" &
-        Convert_GdkRGBA_To_String (Color) & "' -draw 'color " & X_Str & ", " &
-        Y_Str & " point' " & Full_Name;
+        "python3 " & Relative_Path_From_Bin & "put_pixel.py " &
+        Image_Destination & " " & Name & " " & X_Str & " " & Y_Str & " " &
+        Convert_GdkRGBA_To_String (Color);
 
       Put_Pixel_Cmd : aliased constant C.char_array := C.To_C (Full_Cmd);
 
@@ -69,10 +66,8 @@ package body RGBA is
       X_Str : constant String := Trim (Integer'Image (X), Ada.Strings.Left);
       Y_Str : constant String := Trim (Integer'Image (Y), Ada.Strings.Left);
 
-      --  Using a python script instead of IM, because the latter can return
-      --  " fractal ", which is a problem.
       Full_Cmd : constant String :=
-        "python3 ../src/model/image_manipulation/get_pixel.py " &
+        "python3 " & Relative_Path_From_Bin & "get_pixel.py " &
         Image_Destination & " " & Source & " " & X_Str & " " & Y_Str;
 
       Get_Pixel_Color_Cmd : aliased constant C.char_array := C.To_C (Full_Cmd);
@@ -106,7 +101,7 @@ package body RGBA is
 
    function Float_To_Int_RGB (x : Gdouble) return Integer is
    begin
-      return Integer (Float (x) * 255.0);
+      return Integer (Float'Rounding (Float (x) * 255.0));
    end Float_To_Int_RGB;
 
    ---------------------------
@@ -140,7 +135,7 @@ package body RGBA is
            Ada.Strings.Left);
 
    begin
-      return "rgb(" & R & ", " & G & ", " & B & ")";
+      return R & "," & G & "," & B;
    end Convert_GdkRGBA_To_String;
 
    -----------------
@@ -167,7 +162,7 @@ package body RGBA is
    function Convert_String_To_GdkRGBA (Color_Str : String) return Gdk_RGBA is
 
       Slice_Color_Str : constant String :=
-        Strip_Space (Color_Str (Color_Str'First + 5 .. Color_Str'Last - 1));
+        Strip_Space (Color_Str (Color_Str'First + 1 .. Color_Str'Last - 1));
 
       F     : Positive;
       L     : Natural;

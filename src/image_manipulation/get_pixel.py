@@ -12,6 +12,6 @@ im = Image.open(Dest+Image_Name).convert('RGB')
 
 with open(Dest+"res.txt", 'w') as outfile:
     r,g,b = im.getpixel((X,Y))
-    outfile.write("srgb("+str(r)+","+str(g)+","+str(b)+")")
+    outfile.write("("+str(r)+","+str(g)+","+str(b)+")")
 
 
