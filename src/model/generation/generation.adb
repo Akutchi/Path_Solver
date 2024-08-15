@@ -2,6 +2,10 @@ with Ada.Numerics.Generic_Elementary_Functions;
 
 with Gdk.RGBA; use Gdk.RGBA;
 
+with Image_IO;            use Image_IO;
+with Image_IO.Holders;    use Image_IO.Holders;
+with Image_IO.Operations; use Image_IO.Operations;
+
 with RGBA;                       use RGBA;
 with Generation.Random_Biome;    use Generation.Random_Biome;
 with Generation.Random_Position; use Generation.Random_Position;
@@ -21,33 +25,46 @@ package body Generation is
    procedure Island (Source : String) is
 
       Case_Until_End : constant Natural := Zoom_Levels (0) * Zoom_Levels (0);
-      Choice         : Land_Or_Ocean;
-      Color          : Gdk_RGBA;
+
+      Choice : Land_Or_Ocean;
+
+      Image : Handle;
+      Color : Gdk_RGBA;
 
    begin
 
       Create_Image (Source, Zoom_Levels (0));
+      Read (Image_Destination & Source, Image);
 
-      for k in 0 .. Case_Until_End - 1 loop
+      declare
 
-         declare
+         Data : Image_Data := Image.Value;
 
-            I : constant Pos := Pos (k / Zoom_Levels (0));
-            J : constant Pos := Pos (k mod Zoom_Levels (0));
+      begin
 
-         begin
+         for k in 0 .. Case_Until_End - 1 loop
 
-            Choice := Draw_Random_Base_Biome;
+            declare
 
-            if Choice > 3 then
-               Color := Ocean;
-            else
-               Color := Rocks;
-            end if;
-            Put_Pixel (Source, I, J, Color);
+               I : constant Pos := Pos (k / Zoom_Levels (0));
+               J : constant Pos := Pos (k mod Zoom_Levels (0));
 
-         end;
-      end loop;
+            begin
+
+               Choice := Draw_Random_Base_Biome;
+
+               if Choice > 3 then
+                  Color := Ocean;
+               else
+                  Color := Rocks;
+               end if;
+               Put_Pixel (Data, I, J, Color);
+
+            end;
+         end loop;
+
+         Write_PNG (Image_Destination & Source, Data);
+      end;
 
    end Island;
 
@@ -61,44 +78,59 @@ package body Generation is
       I, J : Pos := 0; --  Base coords
       K, L : Pos := 0; --  Zoomed Coords
 
+      Image_Src  : Handle;
+      Image_Dest : Handle;
+
    begin
 
       Create_Image (Destination, Multiply * 2);
 
-      loop
+      Read (Image_Destination & Source, Image_Src);
+      Read (Image_Destination & Destination, Image_Dest);
 
-         exit when Natural (L) > Multiply * 2 - 1;
+      declare
 
-         I := 0;
-         K := 0;
+         Data_Src  : constant Image_Data := Image_Src.Value;
+         Data_Dest : Image_Data          := Image_Dest.Value;
+
+      begin
 
          loop
 
-            exit when Natural (K) > Multiply * 2 - 1;
+            exit when Natural (L) > Multiply * 2 - 1;
 
-            declare
-               Color_Str : constant String   := Get_Pixel_Color (Source, I, J);
-               Color     : constant Gdk_RGBA :=
-                 Convert_String_To_GdkRGBA (Color_Str);
+            I := 0;
+            K := 0;
 
-            begin
+            loop
 
-               Put_Pixel (Destination, K, L, Color);
-               Put_Pixel (Destination, K + 1, L, Color);
-               Put_Pixel (Destination, K, L + 1, Color);
-               Put_Pixel (Destination, K + 1, L + 1, Color);
+               exit when Natural (K) > Multiply * 2 - 1;
 
-            end;
+               declare
+                  Color : constant Gdk_RGBA :=
+                    Color_Info_To_GdkRGBA (Get_Pixel_Color (Data_Src, I, J));
 
-            I := I + 1;
-            K := K + 2;
+               begin
+
+                  Put_Pixel (Data_Dest, K, L, Color);
+                  Put_Pixel (Data_Dest, K + 1, L, Color);
+                  Put_Pixel (Data_Dest, K, L + 1, Color);
+                  Put_Pixel (Data_Dest, K + 1, L + 1, Color);
+
+               end;
+
+               I := I + 1;
+               K := K + 2;
+
+            end loop;
+
+            J := J + 1;
+            L := L + 2;
 
          end loop;
 
-         J := J + 1;
-         L := L + 2;
-
-      end loop;
+         Write_PNG (Image_Destination & Destination, Data_Dest);
+      end;
 
    end Zoom;
 
@@ -112,30 +144,67 @@ package body Generation is
       Stochastic_Tries : constant Positive :=
         Positive (N * Log (N, Ada.Numerics.e));
 
+      Image : Handle;
+
    begin
 
-      for I in 1 .. Stochastic_Tries loop
+      Read (Image_Destination & Source, Image);
 
-         declare
+      declare
 
-            Coords : constant Point    := Draw_Random_Position (Current_Zoom);
-            Color_Str   : constant String   :=
-              Get_Pixel_Color (Source, Coords.X, Coords.Y);
-            Lossy_Color : constant Gdk_RGBA :=
-              Convert_String_To_GdkRGBA (Color_Str);
+         Data : Image_Data := Image.Value;
 
-         begin
+      begin
 
-            if RGBA."=" (Lossy_Color, Ocean) then
+         for I in 1 .. Stochastic_Tries loop
 
-               Put_Pixel (Source, Coords.X, Coords.Y, Rocks);
+            declare
 
-            end if;
+               Coords : constant Point := Draw_Random_Position (Current_Zoom);
+               Lossy_Color : constant Gdk_RGBA :=
+                 Color_Info_To_GdkRGBA
+                   (Get_Pixel_Color (Data, Coords.X, Coords.Y));
 
-         end;
+            begin
 
-      end loop;
+               if RGBA."=" (Lossy_Color, Ocean) then
+
+                  Put_Pixel (Data, Coords.X, Coords.Y, Rocks);
+
+               end if;
+
+            end;
+
+         end loop;
+
+         Write_PNG (Image_Destination & Source, Data);
+      end;
 
    end Add_Islands;
+
+   procedure Place_Hills (Source : String; Current_Zoom : Positive) is
+
+      N                : constant Float    := Float (Current_Zoom);
+      Stochastic_Tries : constant Positive :=
+        Positive (N * Log (N, Ada.Numerics.e));
+
+      Image : Handle;
+
+      Coords : Point;
+   begin
+
+      declare
+         Data : Image_Data := Image.Value;
+      begin
+
+         for I in 0 .. Stochastic_Tries loop
+
+            Coords := Draw_Random_Position (Current_Zoom);
+            Put_Pixel (Data, Coords.X, Coords.Y, General_Hills);
+
+         end loop;
+      end;
+
+   end Place_Hills;
 
 end Generation;

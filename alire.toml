@@ -14,3 +14,5 @@ executables = ["path_solver"]
 [[depends-on]]
 gtkada = "^22.0.0"
 
+[[depends-on]]
+image_io = "^20240725.0.0"

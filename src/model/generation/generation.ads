@@ -16,8 +16,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Temperature_Map; use Temperature_Map;
-
 package Generation is
 
    type Zoom_Levels_List is array (Natural range 0 .. 5) of Positive;
@@ -26,5 +24,6 @@ package Generation is
    procedure Island (Source : String);
    procedure Zoom (Source : String; Multiply : Positive; Destination : String);
    procedure Add_Islands (Source : String; Current_Zoom : Positive);
+   procedure Place_Hills (Source : String; Current_Zoom : Positive);
 
 end Generation;

@@ -1,10 +1,11 @@
-with Ada.Strings;           use Ada.Strings;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Strings.Fixed;     use Ada.Strings.Fixed;
-with Ada.Strings.Maps;      use Ada.Strings.Maps;
-with Ada.Text_IO;           use Ada.Text_IO;
+with Ada.Strings;       use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 package body RGBA is
+
+   ------------------
+   -- Almost_Equal --
+   ------------------
 
    function Almost_Equal (x, y : Gdouble; epsilon : Precision) return Boolean
    is
@@ -13,6 +14,10 @@ package body RGBA is
       return Precision (abs (x - y)) < epsilon;
 
    end Almost_Equal;
+
+   -------
+   -- = --
+   -------
 
    function "=" (Lossy_Color : Gdk_RGBA; To : Gdk_RGBA) return Boolean is
 
@@ -53,28 +58,71 @@ package body RGBA is
 
    end Create_Image;
 
+   ----------------------
+   -- UInt8_To_Gdouble --
+   ----------------------
+
+   function UInt8_To_Gdouble (c : Interfaces.Unsigned_8) return Gdouble is
+   begin
+
+      return Gdouble (Float (c) / 255.0);
+   end UInt8_To_Gdouble;
+
+   ----------------------
+   -- Gdouble_To_UInt8 --
+   ----------------------
+
+   function Gdouble_To_UInt8 (x : Gdouble) return Interfaces.Unsigned_8 is
+   begin
+      return Interfaces.Unsigned_8 (Float'Rounding (Float (x) * 255.0));
+   end Gdouble_To_UInt8;
+
+   ---------------------------
+   -- GdkRGBA_To_Color_Info --
+   ---------------------------
+
+   function GdkRGBA_To_Color_Info (Color : Gdk_RGBA) return Color_Info is
+
+      Color_I : Color_Info;
+
+   begin
+
+      Color_I.Red   := Gdouble_To_UInt8 (Color.Red);
+      Color_I.Green := Gdouble_To_UInt8 (Color.Green);
+      Color_I.Blue  := Gdouble_To_UInt8 (Color.Blue);
+
+      return Color_I;
+
+   end GdkRGBA_To_Color_Info;
+
+   ---------------------------
+   -- Color_Info_To_GdkRGBA --
+   ---------------------------
+
+   function Color_Info_To_GdkRGBA (Color : Color_Info) return Gdk_RGBA is
+
+      Color_Gdk : Gdk_RGBA;
+
+   begin
+
+      Color_Gdk.Red   := UInt8_To_Gdouble (Color.Red);
+      Color_Gdk.Green := UInt8_To_Gdouble (Color.Green);
+      Color_Gdk.Blue  := UInt8_To_Gdouble (Color.Blue);
+
+      return Color_Gdk;
+
+   end Color_Info_To_GdkRGBA;
+
    ---------------
    -- Put_Pixel --
    ---------------
 
-   procedure Put_Pixel (Name : String; X, Y : Pos; Color : Gdk_RGBA) is
-
-      X_Str : constant String := Trim (Pos'Image (X), Ada.Strings.Left);
-      Y_Str : constant String := Trim (Pos'Image (Y), Ada.Strings.Left);
-
-      Full_Cmd : constant String :=
-        "python3 " & Relative_Path_From_Bin & "put_pixel.py " &
-        Image_Destination & " " & Name & " " & X_Str & " " & Y_Str & " " &
-        Convert_GdkRGBA_To_String (Color);
-
-      Put_Pixel_Cmd : aliased constant C.char_array := C.To_C (Full_Cmd);
+   procedure Put_Pixel (Data : in out Image_Data; X, Y : Pos; Color : Gdk_RGBA)
+   is
 
    begin
 
-      result := system (Put_Pixel_Cmd);
-      if result /= 0 then
-         raise Program_Error with "Exit code:" & result'Image;
-      end if;
+      Data (Natural (X), Natural (Y)) := GdkRGBA_To_Color_Info (Color);
 
    end Put_Pixel;
 
@@ -82,132 +130,11 @@ package body RGBA is
    -- Get_Pixel_Color --
    ---------------------
 
-   function Get_Pixel_Color (Source : String; X, Y : Pos) return String is
-
-      X_Str : constant String := Trim (Pos'Image (X), Ada.Strings.Left);
-      Y_Str : constant String := Trim (Pos'Image (Y), Ada.Strings.Left);
-
-      Full_Cmd : constant String :=
-        "python3 " & Relative_Path_From_Bin & "get_pixel.py " &
-        Image_Destination & " " & Source & " " & X_Str & " " & Y_Str;
-
-      Get_Pixel_Color_Cmd : aliased constant C.char_array := C.To_C (Full_Cmd);
-
-      F    : File_Type;
-      Data : Unbounded_String := Null_Unbounded_String;
-
+   function Get_Pixel_Color (Data : Image_Data; X, Y : Pos) return Color_Info
+   is
    begin
-
-      result := system (Get_Pixel_Color_Cmd);
-      if result /= 0 then
-         raise Program_Error with "Exit code:" & result'Image;
-      end if;
-
-      Open (File => F, Mode => In_File, Name => Pixel_Type);
-
-      Append (Data, Get_Line (F));
-      Close (F);
-
-      return To_String (Data);
-
-   exception
-      when others =>
-         return "none";
+      return Data (Natural (X), Natural (Y));
 
    end Get_Pixel_Color;
-
-   ----------------------
-   -- Float_To_Int_RBG --
-   ----------------------
-
-   function Float_To_Int_RGB (x : Gdouble) return Integer is
-   begin
-      return Integer (Float'Rounding (Float (x) * 255.0));
-   end Float_To_Int_RGB;
-
-   ---------------------------
-   -- Integer_To_String_RGB --
-   ---------------------------
-
-   function Integer_To_String_RGB (n : Integer) return String is
-   begin
-      return Integer'Image (n);
-   end Integer_To_String_RGB;
-
-   -------------------------------
-   -- Convert_GdkRGBA_To_String --
-   -------------------------------
-
-   function Convert_GdkRGBA_To_String (Color : Gdk_RGBA) return String is
-
-      R : constant String :=
-        Trim
-          (Integer_To_String_RGB (Float_To_Int_RGB (Color.Red)),
-           Ada.Strings.Left);
-
-      G : constant String :=
-        Trim
-          (Integer_To_String_RGB (Float_To_Int_RGB (Color.Green)),
-           Ada.Strings.Left);
-
-      B : constant String :=
-        Trim
-          (Integer_To_String_RGB (Float_To_Int_RGB (Color.Blue)),
-           Ada.Strings.Left);
-
-   begin
-      return R & "," & G & "," & B;
-   end Convert_GdkRGBA_To_String;
-
-   -------------------------------
-   -- Convert_String_To_GdkRGBA --
-   -------------------------------
-
-   function Convert_String_To_GdkRGBA (Color_Str : String) return Gdk_RGBA is
-
-      Slice_Color_Str : constant String :=
-        Color_Str (Color_Str'First + 1 .. Color_Str'Last - 1);
-
-      F     : Positive;
-      L     : Natural;
-      I     : Natural := Slice_Color_Str'First;
-      Index : Natural := 0;
-
-      Comma : constant Character_Set := To_Set (',');
-
-      Color_Obj : Gdk_RGBA;
-
-      Color_Components : Array_Gdouble;
-
-   begin
-
-      while I in Slice_Color_Str'Range loop
-
-         Find_Token
-           (Source => Slice_Color_Str, Set => Comma, From => I,
-            Test   => Outside, First => F, Last => L);
-
-         exit when L = 0;
-
-         Color_Components (Index) :=
-           Gdouble (Float'Value (Slice_Color_Str (F .. L)) / 255.0);
-
-         I     := L + 1;
-         Index := Index + 1;
-
-      end loop;
-
-      Color_Obj.Red   := Color_Components (0);
-      Color_Obj.Green := Color_Components (1);
-      Color_Obj.Blue  := Color_Components (2);
-      Color_Obj.Alpha := 1.0;
-
-      return Color_Obj;
-
-   exception
-      when others =>
-         return (0.0, 0.0, 0.0, 1.0);
-
-   end Convert_String_To_GdkRGBA;
 
 end RGBA;

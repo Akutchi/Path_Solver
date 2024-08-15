@@ -158,16 +158,20 @@ package body Temperature_Map is
       K, L : Lign_Type := 0; --  Zoomed Coords
    begin
 
+      To := (others => (others => 1));
+      --  without it, invalid data when printing
+      --  must be missing smth.
+
       loop
 
-         exit when L > Col_80'Last - 4;
+         exit when L > Col_80'Last - 3;
 
          I := 0;
          K := 0;
 
          loop
 
-            exit when K > Row_80'Last - 4;
+            exit when K > Row_80'Last - 3;
 
             declare
 
@@ -175,34 +179,24 @@ package body Temperature_Map is
 
             begin
 
+               To (K, L)     := Value;
+               To (K, L + 1) := Value;
+               To (K, L + 2) := Value;
+               To (K, L + 3) := Value;
+
                To (K + 1, L)     := Value;
-               To (K, L + 1)     := Value;
                To (K + 1, L + 1) := Value;
+               To (K + 1, L + 2) := Value;
+               To (K + 1, L + 3) := Value;
 
                To (K + 2, L)     := Value;
-               To (K, L + 2)     := Value;
                To (K + 2, L + 1) := Value;
-               To (K + 1, L + 2) := Value;
                To (K + 2, L + 2) := Value;
+               To (K + 2, L + 3) := Value;
 
                To (K + 3, L)     := Value;
-               To (K, L + 3)     := Value;
-               To (K + 2, L + 3) := Value;
+               To (K + 3, L + 1) := Value;
                To (K + 3, L + 2) := Value;
-               To (K + 3, L + 1) := Value;
-               To (K + 1, L + 3) := Value;
-               To (K + 3, L + 3) := Value;
-
-               To (K + 4, L) := Value;
-               To (K, L + 4) := Value;
-
-               To (K + 4, L + 1) := Value;
-               To (K + 1, L + 4) := Value;
-
-               To (K + 3, L + 1) := Value;
-               To (K + 1, L + 3) := Value;
-               To (K + 3, L + 3) := Value;
-               To (K + 3, L + 3) := Value;
                To (K + 3, L + 3) := Value;
 
             end;

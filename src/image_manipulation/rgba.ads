@@ -13,10 +13,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Interfaces;
 with Interfaces.C;
 
 with Glib;     use Glib;
 with Gdk.RGBA; use Gdk.RGBA;
+
+with Image_IO; use Image_IO;
 
 with Generation.Random_Position; use Generation.Random_Position;
 
@@ -43,22 +46,24 @@ package RGBA is
 
    procedure Create_Image (Name : String; Zoom : Positive);
 
-   procedure Put_Pixel (Name : String; X, Y : Pos; Color : Gdk_RGBA);
+   procedure Put_Pixel
+     (Data : in out Image_Data; X, Y : Pos; Color : Gdk_RGBA);
 
-   function Get_Pixel_Color (Source : String; X, Y : Pos) return String;
+   function Get_Pixel_Color (Data : Image_Data; X, Y : Pos) return Color_Info;
    --  In the (R,G,B) integer format
 
-   function Convert_GdkRGBA_To_String (Color : Gdk_RGBA) return String;
-   --  In the "R,G,B" format
+   function Color_Info_To_GdkRGBA (Color : Color_Info) return Gdk_RGBA;
+   --  In the (R,G,B) float format
 
-   function Convert_String_To_GdkRGBA (Color_Str : String) return Gdk_RGBA;
+   function GdkRGBA_To_Color_Info (Color : Gdk_RGBA) return Color_Info;
+   --  In the (R,G,B) integer format
 
 private
 
    function Almost_Equal (x, y : Gdouble; epsilon : Precision) return Boolean;
 
-   function Float_To_Int_RGB (x : Gdouble) return Integer;
+   function UInt8_To_Gdouble (c : Interfaces.Unsigned_8) return Gdouble;
 
-   function Integer_To_String_RGB (n : Integer) return String;
+   function Gdouble_To_UInt8 (x : Gdouble) return Interfaces.Unsigned_8;
 
 end RGBA;
