@@ -16,6 +16,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Temperature_Map; use Temperature_Map;
+
 package Generation is
 
    type Zoom_Levels_List is array (Natural range 0 .. 5) of Positive;
