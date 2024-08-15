@@ -21,10 +21,10 @@ package Generation.Random_Position is
 
    package Random_5 is new Ada.Numerics.Discrete_Random (Pos_5);
    package Random_10 is new Ada.Numerics.Discrete_Random (Pos_10);
-   package Random_20 is new Ada.Numerics.Discrete_Random (Pos_10);
-   package Random_40 is new Ada.Numerics.Discrete_Random (Pos_10);
-   package Random_80 is new Ada.Numerics.Discrete_Random (Pos_10);
-   package Random_160 is new Ada.Numerics.Discrete_Random (Pos_10);
+   package Random_20 is new Ada.Numerics.Discrete_Random (Pos_20);
+   package Random_40 is new Ada.Numerics.Discrete_Random (Pos_40);
+   package Random_80 is new Ada.Numerics.Discrete_Random (Pos_80);
+   package Random_160 is new Ada.Numerics.Discrete_Random (Pos_160);
 
    use Random_5;
    use Random_10;

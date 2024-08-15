@@ -6,6 +6,27 @@ with Ada.Text_IO;           use Ada.Text_IO;
 
 package body RGBA is
 
+   function Almost_Equal (x, y : Gdouble; epsilon : Precision) return Boolean
+   is
+   begin
+
+      return Precision (abs (x - y)) < epsilon;
+
+   end Almost_Equal;
+
+   function "=" (Lossy_Color : Gdk_RGBA; To : Gdk_RGBA) return Boolean is
+
+      epsilon : constant Precision := 0.1;
+
+   begin
+
+      return
+        Almost_Equal (Lossy_Color.Red, To.Red, epsilon)
+        and then Almost_Equal (Lossy_Color.Green, To.Green, epsilon)
+        and then Almost_Equal (Lossy_Color.Blue, To.Blue, epsilon);
+
+   end "=";
+
    ------------------
    -- Create_Image --
    ------------------
@@ -36,10 +57,10 @@ package body RGBA is
    -- Put_Pixel --
    ---------------
 
-   procedure Put_Pixel (Name : String; X, Y : Integer; Color : Gdk_RGBA) is
+   procedure Put_Pixel (Name : String; X, Y : Pos; Color : Gdk_RGBA) is
 
-      X_Str : constant String := Trim (Integer'Image (X), Ada.Strings.Left);
-      Y_Str : constant String := Trim (Integer'Image (Y), Ada.Strings.Left);
+      X_Str : constant String := Trim (Pos'Image (X), Ada.Strings.Left);
+      Y_Str : constant String := Trim (Pos'Image (Y), Ada.Strings.Left);
 
       Full_Cmd : constant String :=
         "python3 " & Relative_Path_From_Bin & "put_pixel.py " &
@@ -61,10 +82,10 @@ package body RGBA is
    -- Get_Pixel_Color --
    ---------------------
 
-   function Get_Pixel_Color (Source : String; X, Y : Integer) return String is
+   function Get_Pixel_Color (Source : String; X, Y : Pos) return String is
 
-      X_Str : constant String := Trim (Integer'Image (X), Ada.Strings.Left);
-      Y_Str : constant String := Trim (Integer'Image (Y), Ada.Strings.Left);
+      X_Str : constant String := Trim (Pos'Image (X), Ada.Strings.Left);
+      Y_Str : constant String := Trim (Pos'Image (Y), Ada.Strings.Left);
 
       Full_Cmd : constant String :=
         "python3 " & Relative_Path_From_Bin & "get_pixel.py " &
@@ -138,31 +159,14 @@ package body RGBA is
       return R & "," & G & "," & B;
    end Convert_GdkRGBA_To_String;
 
-   -----------------
-   -- Strip_Space --
-   -----------------
-
-   function Strip_Space (S : String) return String is
-      Result  : String   := S;
-      Current : Positive := Result'First;
-      Last    : Natural  := Result'Last;
-   begin
-      loop
-         exit when Current > Last;
-         if Result (Current) = ' ' then
-            Result (Current .. Last - 1) := Result (Current + 1 .. Last);
-            Last                         := Last - 1;
-         else
-            Current := Current + 1;
-         end if;
-      end loop;
-      return Result (Result'First .. Last);
-   end Strip_Space;
+   -------------------------------
+   -- Convert_String_To_GdkRGBA --
+   -------------------------------
 
    function Convert_String_To_GdkRGBA (Color_Str : String) return Gdk_RGBA is
 
       Slice_Color_Str : constant String :=
-        Strip_Space (Color_Str (Color_Str'First + 1 .. Color_Str'Last - 1));
+        Color_Str (Color_Str'First + 1 .. Color_Str'Last - 1);
 
       F     : Positive;
       L     : Natural;

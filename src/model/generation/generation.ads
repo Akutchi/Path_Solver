@@ -9,6 +9,8 @@
 -- The only exception being the Island layer which create the first map.     --
 -- Each Stack is a list of procedure.                                        --
 --                                                                           --
+-- It is here supposed that the created images are square images.            --
+--                                                                           --
 --                                                                           --
 -- [1] https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/    --
 --                                                                           --
@@ -20,6 +22,7 @@ package Generation is
    Zoom_Levels : constant Zoom_Levels_List := (5, 10, 20, 40, 80, 160);
 
    procedure Island (Source : String);
-   procedure Zoom (Source : String; Destination : String; Base_Zoom : Natural);
+   procedure Zoom (Source : String; Multiply : Positive; Destination : String);
+   procedure Add_Islands (Source : String; Current_Zoom : Positive);
 
 end Generation;
