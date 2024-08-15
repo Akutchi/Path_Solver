@@ -2,11 +2,37 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body Temperature_Map is
 
+   function Inverse_Temperature_CDF return Temperature_Type is
+
+      Rnd_Type : Ada.Numerics.Float_Random.Uniformly_Distributed;
+      Rnd_Cold : Ada.Numerics.Float_Random.Uniformly_Distributed;
+   begin
+
+      Ada.Numerics.Float_Random.Reset (Gf);
+
+      Rnd_Type := Ada.Numerics.Float_Random.Random (Gf);
+      if Rnd_Type > 0.3 then
+
+         return Warm;
+      else
+
+         Rnd_Cold := Ada.Numerics.Float_Random.Random (Gf);
+         if Rnd_Cold > 0.5 then
+
+            return Cold;
+         end if;
+
+         return Freezing;
+
+      end if;
+
+   end Inverse_Temperature_CDF;
+
    -----------------------------
-   -- Init_Temperature_Map_20 --
+   -- Init_Temperature_Map_Z3 --
    -----------------------------
 
-   procedure Init_Temperature_Map_20 (Temperature_Map : out Temperature_Map_20)
+   procedure Init_Temperature_Map_Z3 (Temperature_Map : out Temperature_Map_Z3)
    is
 
       Rnd_Temp : Temperature_Type;
@@ -14,11 +40,11 @@ package body Temperature_Map is
 
       Random_Temperature.Reset (G_T);
 
-      for I in Row_20'Range loop
-         for J in Col_20'Range loop
+      for I in Row_Z3'Range loop
+         for J in Col_Z3'Range loop
 
             loop
-               Rnd_Temp := Random_Temperature.Random (G_T);
+               Rnd_Temp := Inverse_Temperature_CDF;
                exit when Rnd_Temp /= 2;
             end loop;
 
@@ -26,14 +52,14 @@ package body Temperature_Map is
          end loop;
       end loop;
 
-   end Init_Temperature_Map_20;
+   end Init_Temperature_Map_Z3;
 
    --------------------------------
    -- Border_Case_Need_Smoothing --
    --------------------------------
 
    function Border_Case_Need_Smoothing
-     (T_M : Temperature_Map_20; I, J : Lign_Type; Ci, Cj : Lign_Type)
+     (T_M : Temperature_Map_Z3; I, J : Lign_Type; Ci, Cj : Lign_Type)
       return Boolean
    is
       Two_Way    : Natural;
@@ -92,7 +118,7 @@ package body Temperature_Map is
    --------------------
 
    function Need_Smoothing
-     (T_M : Temperature_Map_20; I, J : Lign_Type) return Boolean
+     (T_M : Temperature_Map_Z3; I, J : Lign_Type) return Boolean
    is
 
       Balanced_4 : constant Positive := 4;
@@ -102,7 +128,7 @@ package body Temperature_Map is
 
       if Border_Case_Need_Smoothing (T_M, I, J, 0, 0)
         or else Border_Case_Need_Smoothing
-          (T_M, I, J, Row_20'Last, Col_20'Last)
+          (T_M, I, J, Row_Z3'Last, Col_Z3'Last)
       then
          return True;
       end if;
@@ -110,7 +136,7 @@ package body Temperature_Map is
       --  If does not need smoothing, will still return false and continue
       --  leading to index check failed.
       if (I = 0 or else J = 0)
-        or else (I = Row_20'Last or else J = Col_20'Last)
+        or else (I = Row_Z3'Last or else J = Col_Z3'Last)
       then
          return False;
       end if;
@@ -129,11 +155,11 @@ package body Temperature_Map is
    -- Smooth_Temperature --
    ------------------------
 
-   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_20) is
+   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z3) is
    begin
 
-      for I in Row_20'Range loop
-         for J in Col_20'Range loop
+      for I in Row_Z3'Range loop
+         for J in Col_Z3'Range loop
 
             if Need_Smoothing (Temperature_Map, I, J) then
 
@@ -151,8 +177,12 @@ package body Temperature_Map is
 
    end Smooth_Temperature;
 
+   -------------------
+   -- Quadruple_Map --
+   -------------------
+
    procedure Quadruple_Map
-     (From : Temperature_Map_20; To : out Temperature_Map_80)
+     (From : Temperature_Map_Z3; To : out Temperature_Map_Z5)
    is
       I, J : Lign_Type := 0; --  Base coords
       K, L : Lign_Type := 0; --  Zoomed Coords
@@ -164,14 +194,14 @@ package body Temperature_Map is
 
       loop
 
-         exit when L > Col_80'Last - 3;
+         exit when L > Col_Z5'Last - 3;
 
          I := 0;
          K := 0;
 
          loop
 
-            exit when K > Row_80'Last - 3;
+            exit when K > Row_Z5'Last - 3;
 
             declare
 
@@ -213,35 +243,35 @@ package body Temperature_Map is
    end Quadruple_Map;
 
    ------------------
-   -- Print_Map_20 --
+   -- Print_Map_Z3 --
    ------------------
 
-   procedure Print_Map_20 (T_M : Temperature_Map_20) is
+   procedure Print_Map_Z3 (T_M : Temperature_Map_Z3) is
    begin
 
-      for I in Row_20'Range loop
-         for J in Col_20'Range loop
+      for I in Row_Z3'Range loop
+         for J in Col_Z3'Range loop
             Put (Temperature_Type'Image (T_M (I, J)) & " ");
          end loop;
          Put_Line ("");
       end loop;
 
-   end Print_Map_20;
+   end Print_Map_Z3;
 
    ------------------
-   -- Print_Map_80 --
+   -- Print_Map_Z5 --
    ------------------
 
-   procedure Print_Map_80 (T_M : Temperature_Map_80) is
+   procedure Print_Map_Z5 (T_M : Temperature_Map_Z5) is
    begin
 
-      for I in Row_80'Range loop
-         for J in Col_80'Range loop
+      for I in Row_Z5'Range loop
+         for J in Col_Z5'Range loop
             Put (Temperature_Type'Image (T_M (I, J)) & "");
          end loop;
          Put_Line ("");
       end loop;
 
-   end Print_Map_80;
+   end Print_Map_Z5;
 
 end Temperature_Map;

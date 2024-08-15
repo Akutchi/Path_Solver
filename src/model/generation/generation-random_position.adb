@@ -1,29 +1,31 @@
+with Constants; use Constants;
+
 package body Generation.Random_Position is
 
    function Draw (Zoom : Integer) return Point is
    begin
 
-      Reset (G5);
-      Reset (G10);
-      Reset (G20);
-      Reset (G40);
-      Reset (G80);
-      Reset (G160);
+      Reset (GZ1);
+      Reset (GZ2);
+      Reset (GZ3);
+      Reset (GZ4);
+      Reset (GZ5);
+      Reset (GZ6);
 
       case Zoom is
 
-         when 5 =>
-            return (Random (G5), Random (G5));
-         when 10 =>
-            return (Random (G10), Random (G10));
-         when 20 =>
-            return (Random (G20), Random (G20));
-         when 40 =>
-            return (Random (G40), Random (G40));
-         when 80 =>
-            return (Random (G80), Random (G80));
-         when 160 =>
-            return (Random (G160), Random (G160));
+         when Z1 =>
+            return (Random (GZ1), Random (GZ1));
+         when Z2 =>
+            return (Random (GZ2), Random (GZ2));
+         when Z3 =>
+            return (Random (GZ3), Random (GZ3));
+         when Z4 =>
+            return (Random (GZ4), Random (GZ4));
+         when Z5 =>
+            return (Random (GZ5), Random (GZ5));
+         when Z6 =>
+            return (Random (GZ6), Random (GZ6));
 
             --  This should never happen
          when others =>
@@ -40,18 +42,18 @@ package body Generation.Random_Position is
 
       case Zoom is
 
-         when 5 =>
-            return Draw (5);
-         when 10 =>
-            return Draw (10);
-         when 20 =>
-            return Draw (20);
-         when 40 =>
-            return Draw (20);
-         when 80 =>
-            return Draw (80);
-         when 160 =>
-            return Draw (160);
+         when Z1 =>
+            return Draw (Z1);
+         when Z2 =>
+            return Draw (Z2);
+         when Z3 =>
+            return Draw (Z3);
+         when Z4 =>
+            return Draw (Z3);
+         when Z5 =>
+            return Draw (Z5);
+         when Z6 =>
+            return Draw (Z6);
 
             --  This should never happen
          when others =>

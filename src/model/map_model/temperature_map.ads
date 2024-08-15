@@ -1,4 +1,5 @@
 with Ada.Numerics.Discrete_Random;
+with Ada.Numerics.Float_Random;
 
 package Temperature_Map is
 
@@ -7,9 +8,8 @@ package Temperature_Map is
    package Random_Temperature is new Ada.Numerics.Discrete_Random
      (Temperature_Type);
 
-   use Random_Temperature;
-
-   G_T : Generator;
+   G_T : Random_Temperature.Generator;
+   Gf  : Ada.Numerics.Float_Random.Generator;
 
    Warm      : constant Temperature_Type := 1;
    Temperate : constant Temperature_Type := 2;
@@ -18,26 +18,26 @@ package Temperature_Map is
 
    type Lign_Type is new Natural;
 
-   subtype Row_20 is Lign_Type range 0 .. 19;
-   subtype Col_20 is Lign_Type range 0 .. 19;
+   subtype Row_Z3 is Lign_Type range 0 .. 199;
+   subtype Col_Z3 is Lign_Type range 0 .. 199;
 
    subtype Not_Border_Row is
-     Lign_Type range Row_20'First + 1 .. Row_20'Last - 1;
+     Lign_Type range Row_Z3'First + 1 .. Row_Z3'Last - 1;
 
    subtype Not_Border_Col is
-     Lign_Type range Col_20'First + 1 .. Col_20'Last - 1;
+     Lign_Type range Col_Z3'First + 1 .. Col_Z3'Last - 1;
 
-   type Temperature_Map_20 is array (Row_20, Col_20) of Temperature_Type;
+   type Temperature_Map_Z3 is array (Row_Z3, Col_Z3) of Temperature_Type;
 
-   subtype Row_80 is Lign_Type range 0 .. 79;
-   subtype Col_80 is Lign_Type range 0 .. 79;
+   subtype Row_Z5 is Lign_Type range 0 .. 799;
+   subtype Col_Z5 is Lign_Type range 0 .. 799;
 
-   type Temperature_Map_80 is array (Row_80, Col_80) of Temperature_Type;
+   type Temperature_Map_Z5 is array (Row_Z5, Col_Z5) of Temperature_Type;
 
-   procedure Init_Temperature_Map_20
-     (Temperature_Map : out Temperature_Map_20);
+   procedure Init_Temperature_Map_Z3
+     (Temperature_Map : out Temperature_Map_Z3);
 
-   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_20);
+   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z3);
    --  Two temperature need smoothing if they are two extreme for one another.
    --
    --  With the current cnfiguration, that means if :
@@ -49,18 +49,18 @@ package Temperature_Map is
    --  difference is greater than 4 in non Border case, 2 otherwise.
 
    procedure Quadruple_Map
-     (From : Temperature_Map_20; To : out Temperature_Map_80);
+     (From : Temperature_Map_Z3; To : out Temperature_Map_Z5);
 
-   procedure Print_Map_20 (T_M : Temperature_Map_20);
-   procedure Print_Map_80 (T_M : Temperature_Map_80);
+   procedure Print_Map_Z3 (T_M : Temperature_Map_Z3);
+   procedure Print_Map_Z5 (T_M : Temperature_Map_Z5);
 
 private
 
    function Border_Case_Need_Smoothing
-     (T_M : Temperature_Map_20; I, J : Lign_Type; Ci, Cj : Lign_Type)
+     (T_M : Temperature_Map_Z3; I, J : Lign_Type; Ci, Cj : Lign_Type)
       return Boolean;
 
    function Need_Smoothing
-     (T_M : Temperature_Map_20; I, J : Lign_Type) return Boolean;
+     (T_M : Temperature_Map_Z3; I, J : Lign_Type) return Boolean;
 
 end Temperature_Map;

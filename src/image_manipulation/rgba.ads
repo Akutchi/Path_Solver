@@ -46,16 +46,16 @@ package RGBA is
 
    procedure Create_Image (Name : String; Zoom : Positive);
 
-   procedure Put_Pixel
-     (Data : in out Image_Data; X, Y : Pos; Color : Gdk_RGBA);
-
-   function Get_Pixel_Color (Data : Image_Data; X, Y : Pos) return Color_Info;
-   --  In the (R,G,B) integer format
-
    function Color_Info_To_GdkRGBA (Color : Color_Info) return Gdk_RGBA;
    --  In the (R,G,B) float format
 
    function GdkRGBA_To_Color_Info (Color : Gdk_RGBA) return Color_Info;
+   --  In the (R,G,B) integer format
+
+   procedure Put_Pixel
+     (Data : in out Image_Data; X, Y : Pos; Color : Gdk_RGBA);
+
+   function Get_Pixel_Color (Data : Image_Data; X, Y : Pos) return Color_Info;
    --  In the (R,G,B) integer format
 
 private

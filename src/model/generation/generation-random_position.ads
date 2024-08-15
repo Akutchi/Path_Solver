@@ -11,34 +11,34 @@ with Ada.Numerics.Discrete_Random;
 
 package Generation.Random_Position is
 
-   type Pos is range 0 .. 160;
-   subtype Pos_5 is Pos range 0 .. 4;
-   subtype Pos_10 is Pos range 0 .. 9;
-   subtype Pos_20 is Pos range 0 .. 19;
-   subtype Pos_40 is Pos range 0 .. 39;
-   subtype Pos_80 is Pos range 0 .. 79;
-   subtype Pos_160 is Pos range 0 .. 159;
+   type Pos is range 0 .. 1_600;
+   subtype Pos_Z1 is Pos range 0 .. 49;
+   subtype Pos_Z2 is Pos range 0 .. 99;
+   subtype Pos_Z3 is Pos range 0 .. 199;
+   subtype Pos_Z4 is Pos range 0 .. 399;
+   subtype Pos_Z5 is Pos range 0 .. 799;
+   subtype Pos_Z6 is Pos range 0 .. 1_599;
 
-   package Random_5 is new Ada.Numerics.Discrete_Random (Pos_5);
-   package Random_10 is new Ada.Numerics.Discrete_Random (Pos_10);
-   package Random_20 is new Ada.Numerics.Discrete_Random (Pos_20);
-   package Random_40 is new Ada.Numerics.Discrete_Random (Pos_40);
-   package Random_80 is new Ada.Numerics.Discrete_Random (Pos_80);
-   package Random_160 is new Ada.Numerics.Discrete_Random (Pos_160);
+   package Random_Z1 is new Ada.Numerics.Discrete_Random (Pos_Z1);
+   package Random_Z2 is new Ada.Numerics.Discrete_Random (Pos_Z2);
+   package Random_Z3 is new Ada.Numerics.Discrete_Random (Pos_Z3);
+   package Random_Z4 is new Ada.Numerics.Discrete_Random (Pos_Z4);
+   package Random_Z5 is new Ada.Numerics.Discrete_Random (Pos_Z5);
+   package Random_Z6 is new Ada.Numerics.Discrete_Random (Pos_Z6);
 
-   use Random_5;
-   use Random_10;
-   use Random_20;
-   use Random_40;
-   use Random_80;
-   use Random_160;
+   use Random_Z1;
+   use Random_Z2;
+   use Random_Z3;
+   use Random_Z4;
+   use Random_Z5;
+   use Random_Z6;
 
-   G5   : Random_5.Generator;
-   G10  : Random_10.Generator;
-   G20  : Random_20.Generator;
-   G40  : Random_40.Generator;
-   G80  : Random_80.Generator;
-   G160 : Random_160.Generator;
+   GZ1 : Random_Z1.Generator;
+   GZ2 : Random_Z2.Generator;
+   GZ3 : Random_Z3.Generator;
+   GZ4 : Random_Z4.Generator;
+   GZ5 : Random_Z5.Generator;
+   GZ6 : Random_Z6.Generator;
 
    type Point is record
 

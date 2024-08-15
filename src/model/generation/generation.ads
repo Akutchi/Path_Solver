@@ -16,14 +16,20 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Constants;       use Constants;
+with Temperature_Map; use Temperature_Map;
+
 package Generation is
 
    type Zoom_Levels_List is array (Natural range 0 .. 5) of Positive;
-   Zoom_Levels : constant Zoom_Levels_List := (5, 10, 20, 40, 80, 160);
+   Zoom_Levels : constant Zoom_Levels_List := (Z1, Z2, Z3, Z4, Z5, Z6);
 
    procedure Island (Source : String);
    procedure Zoom (Source : String; Multiply : Positive; Destination : String);
-   procedure Add_Islands (Source : String; Current_Zoom : Positive);
-   procedure Place_Hills (Source : String; Current_Zoom : Positive);
+   procedure Add_Islands
+     (Source : String; Current_Zoom : Positive; Multiplier : Integer := 1);
+   procedure Place_Hills
+     (Source : String; Current_Zoom : Positive; Multiplier : Integer);
+   procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
 
 end Generation;

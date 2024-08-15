@@ -9,7 +9,6 @@ with Image_IO.Operations; use Image_IO.Operations;
 with RGBA;                       use RGBA;
 with Generation.Random_Biome;    use Generation.Random_Biome;
 with Generation.Random_Position; use Generation.Random_Position;
-with Constants;                  use Constants;
 
 package body Generation is
 
@@ -138,11 +137,13 @@ package body Generation is
    -- Add_Islands --
    -----------------
 
-   procedure Add_Islands (Source : String; Current_Zoom : Positive) is
+   procedure Add_Islands
+     (Source : String; Current_Zoom : Positive; Multiplier : Integer := 1)
+   is
 
       N                : constant Float    := Float (Current_Zoom);
       Stochastic_Tries : constant Positive :=
-        Positive (N * Log (N, Ada.Numerics.e));
+        Positive (N * Log (N, Ada.Numerics.e)) * Multiplier;
 
       Image : Handle;
 
@@ -182,16 +183,23 @@ package body Generation is
 
    end Add_Islands;
 
-   procedure Place_Hills (Source : String; Current_Zoom : Positive) is
+   -----------------
+   -- Place_Hills --
+   -----------------
+
+   procedure Place_Hills
+     (Source : String; Current_Zoom : Positive; Multiplier : Integer)
+   is
 
       N                : constant Float    := Float (Current_Zoom);
       Stochastic_Tries : constant Positive :=
-        Positive (N * Log (N, Ada.Numerics.e));
+        Positive (N * Log (N, Ada.Numerics.e)) * Multiplier;
 
       Image : Handle;
 
-      Coords : Point;
    begin
+
+      Read (Image_Destination & Source, Image);
 
       declare
          Data : Image_Data := Image.Value;
@@ -199,12 +207,100 @@ package body Generation is
 
          for I in 0 .. Stochastic_Tries loop
 
-            Coords := Draw_Random_Position (Current_Zoom);
-            Put_Pixel (Data, Coords.X, Coords.Y, General_Hills);
+            declare
 
+               Coords : constant Point := Draw_Random_Position (Current_Zoom);
+               Lossy_Color : constant Gdk_RGBA :=
+                 Color_Info_To_GdkRGBA
+                   (Get_Pixel_Color (Data, Coords.X, Coords.Y));
+
+            begin
+
+               if RGBA."=" (Lossy_Color, Ocean) then
+
+                  Put_Pixel (Data, Coords.X, Coords.Y, Deep_Ocean);
+
+               else
+                  Put_Pixel (Data, Coords.X, Coords.Y, Rocky_Hills);
+
+               end if;
+
+            end;
          end loop;
+
+         Write_PNG (Image_Destination & Source, Data);
       end;
 
    end Place_Hills;
+
+   procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5) is
+
+      Image : Handle;
+
+   begin
+
+      Read (Image_Destination & Source, Image);
+
+      declare
+
+         Data : Image_Data := Image.Value;
+      begin
+
+         for i_index in Row_Z5'Range loop
+            for j_index in Col_Z5'Range loop
+
+               declare
+
+                  I : constant Pos := Pos (i_index);
+                  J : constant Pos := Pos (j_index);
+
+                  Color_Gdk : constant Gdk_RGBA :=
+                    Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, I, J));
+
+                  T : constant Temperature_Type := Temp_Map (i_index, j_index);
+
+               begin
+
+                  null;
+
+                  if RGBA."=" (Color_Gdk, Rocks) then
+
+                     case T is
+
+                        when Warm =>
+                           Put_Pixel (Data, I, J, Desert);
+                        when Temperate =>
+                           Put_Pixel (Data, I, J, Plain);
+                        when Cold =>
+                           Put_Pixel (Data, I, J, Snowy);
+                        when Freezing =>
+                           Put_Pixel (Data, I, J, Ice);
+                     end case;
+
+                  elsif RGBA."=" (Color_Gdk, Rocky_Hills) then
+
+                     case T is
+
+                        when Warm =>
+                           Put_Pixel (Data, I, J, Desert_Hills);
+                        when Temperate =>
+                           Put_Pixel (Data, I, J, Plain_Hills);
+                        when Cold =>
+                           Put_Pixel (Data, I, J, Snowy_Hills);
+                        when Freezing =>
+                           Put_Pixel (Data, I, J, Ice_Hills);
+                     end case;
+
+                  end if;
+
+               end;
+            end loop;
+         end loop;
+
+         Write_PNG (Image_Destination & Source, Data);
+
+      end;
+
+   end Place_Biomes;
 
 end Generation;
