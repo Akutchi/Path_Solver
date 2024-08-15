@@ -16,6 +16,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Image_IO; use Image_IO;
+
 with Constants;       use Constants;
 with Temperature_Map; use Temperature_Map;
 
@@ -28,8 +30,15 @@ package Generation is
    procedure Zoom (Source : String; Multiply : Positive; Destination : String);
    procedure Add_Islands
      (Source : String; Current_Zoom : Positive; Multiplier : Integer := 1);
+   procedure Remove_Too_Much_Ocean (Source : String);
    procedure Place_Hills
      (Source : String; Current_Zoom : Positive; Multiplier : Integer);
    procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
+
+private
+
+   function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer;
+   function Surrounded_By_Land
+     (Data : Image_Data; I, J : Lign_Type) return Boolean;
 
 end Generation;

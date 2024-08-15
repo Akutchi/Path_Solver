@@ -1,8 +1,8 @@
 with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Numerics.Float_Random;
 
 with Gdk.RGBA; use Gdk.RGBA;
 
-with Image_IO;            use Image_IO;
 with Image_IO.Holders;    use Image_IO.Holders;
 with Image_IO.Operations; use Image_IO.Operations;
 
@@ -182,6 +182,87 @@ package body Generation is
       end;
 
    end Add_Islands;
+
+   -------------
+   -- Is_Land --
+   -------------
+
+   function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer is
+
+      Pixel : constant Gdk_RGBA :=
+        Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, Pos (I), Pos (J)));
+   begin
+
+      return (if RGBA."=" (Pixel, Rocks) then 1 else 0);
+
+   end Is_Land;
+
+   ------------------------
+   -- Surrounded_By_Land --
+   ------------------------
+
+   function Surrounded_By_Land
+     (Data : Image_Data; I, J : Lign_Type) return Boolean
+   is
+   begin
+
+      return
+        Is_Land (Data, I + 1, J) + Is_Land (Data, I + 1, J - 1) +
+        Is_Land (Data, I, J - 1) + Is_Land (Data, I - 1, J - 1) +
+        Is_Land (Data, I - 1, J) + Is_Land (Data, I - 1, J + 1) +
+        Is_Land (Data, I, J + 1) + Is_Land (Data, I + 1, J + 1) >=
+        3;
+
+   end Surrounded_By_Land;
+
+   ---------------------------
+   -- Remove_Too_Much_Ocean --
+   ---------------------------
+
+   procedure Remove_Too_Much_Ocean (Source : String) is
+
+      Image : Handle;
+   begin
+
+      Ada.Numerics.Float_Random.Reset (Gf);
+      Read (Image_Destination & Source, Image);
+
+      declare
+         Data : Image_Data := Image.Value;
+
+      begin
+
+         for I in Not_Border_Row loop
+            for J in Not_Border_Col loop
+
+               declare
+
+                  Color : constant Gdk_RGBA :=
+                    Color_Info_To_GdkRGBA
+                      (Get_Pixel_Color (Data, Pos (I), Pos (J)));
+
+                  Rnd_Switch :
+                    constant Ada.Numerics.Float_Random.Uniformly_Distributed :=
+                    Ada.Numerics.Float_Random.Random (Gf);
+
+               begin
+
+                  if RGBA."=" (Color, Ocean)
+                    and then Surrounded_By_Land (Data, I, J)
+                    and then Rnd_Switch > 0.3
+                  then
+
+                     Put_Pixel (Data, Pos (I), Pos (J), Rocks);
+
+                  end if;
+               end;
+
+            end loop;
+         end loop;
+
+      end;
+
+   end Remove_Too_Much_Ocean;
 
    -----------------
    -- Place_Hills --

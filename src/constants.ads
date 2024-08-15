@@ -24,12 +24,12 @@ package Constants is
    --   - generation-random_position.ads
    --   - temperature_map.ads
 
-   Z1 : constant Positive := 50;
-   Z2 : constant Positive := 100;
-   Z3 : constant Positive := 200;
-   Z4 : constant Positive := 400;
-   Z5 : constant Positive := 800;
-   Z6 : constant Positive := 1_600;
+   Z1 : constant Positive := 25;
+   Z2 : constant Positive := 50;
+   Z3 : constant Positive := 100;
+   Z4 : constant Positive := 200;
+   Z5 : constant Positive := 400;
+   Z6 : constant Positive := 800;
 
    Temperature_Base      : constant Positive := Z3;
    Temperature_Quadruple : constant Positive := Z5;

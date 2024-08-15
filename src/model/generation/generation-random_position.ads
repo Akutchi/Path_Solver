@@ -12,12 +12,12 @@ with Ada.Numerics.Discrete_Random;
 package Generation.Random_Position is
 
    type Pos is range 0 .. 1_600;
-   subtype Pos_Z1 is Pos range 0 .. 49;
-   subtype Pos_Z2 is Pos range 0 .. 99;
-   subtype Pos_Z3 is Pos range 0 .. 199;
-   subtype Pos_Z4 is Pos range 0 .. 399;
-   subtype Pos_Z5 is Pos range 0 .. 799;
-   subtype Pos_Z6 is Pos range 0 .. 1_599;
+   subtype Pos_Z1 is Pos range 0 .. 24;
+   subtype Pos_Z2 is Pos range 0 .. 49;
+   subtype Pos_Z3 is Pos range 0 .. 99;
+   subtype Pos_Z4 is Pos range 0 .. 199;
+   subtype Pos_Z5 is Pos range 0 .. 399;
+   subtype Pos_Z6 is Pos range 0 .. 799;
 
    package Random_Z1 is new Ada.Numerics.Discrete_Random (Pos_Z1);
    package Random_Z2 is new Ada.Numerics.Discrete_Random (Pos_Z2);

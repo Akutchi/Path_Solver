@@ -20,13 +20,17 @@ begin
      (Source      => "Layer_2.png", Multiply => Zoom_Levels (1), --  x20
       Destination => "Layer_3.png");
 
-   Add_Islands ("Layer_3.png", Zoom_Levels (2));
-   Add_Islands ("Layer_3.png", Zoom_Levels (2), 3);
-   Add_Islands ("Layer_3.png", Zoom_Levels (2), 3);
-
    Init_Temperature_Map_Z3 (Temp_Map_Z3);
    Smooth_Temperature (Temp_Map_Z3);
    Quadruple_Map (From => Temp_Map_Z3, To => Temp_Map_Z5);
+
+   Add_Islands ("Layer_3.png", Zoom_Levels (2), 4);
+   Add_Islands ("Layer_3.png", Zoom_Levels (2), 4);
+   Add_Islands ("Layer_3.png", Zoom_Levels (2), 4);
+
+   Remove_Too_Much_Ocean ("Layer_3.png");
+   Remove_Too_Much_Ocean ("Layer_3.png");
+   Remove_Too_Much_Ocean ("Layer_3.png");
 
    Zoom
      (Source      => "Layer_3.png", Multiply => Zoom_Levels (2), --  x40
@@ -36,9 +40,9 @@ begin
      (Source      => "Layer_4.png", Multiply => Zoom_Levels (3), --  x80
       Destination => "Layer_5.png");
 
-   Add_Islands ("Layer_5.png", Zoom_Levels (4), 6);
+   Add_Islands ("Layer_5.png", Zoom_Levels (4), 8);
 
-   Place_Hills ("Layer_5.png", Zoom_Levels (4), 3);
+   Place_Hills ("Layer_5.png", Zoom_Levels (4), 8);
 
    Place_Biomes ("Layer_5.png", Temp_Map_Z5);
 

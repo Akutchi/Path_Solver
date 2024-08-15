@@ -11,9 +11,14 @@ package body Temperature_Map is
       Ada.Numerics.Float_Random.Reset (Gf);
 
       Rnd_Type := Ada.Numerics.Float_Random.Random (Gf);
-      if Rnd_Type > 0.3 then
+      if Rnd_Type < 0.3 then
 
          return Warm;
+
+      elsif Rnd_Type >= 0.3 and then Rnd_Type < 0.7 then
+
+         return Temperate;
+
       else
 
          Rnd_Cold := Ada.Numerics.Float_Random.Random (Gf);
@@ -43,10 +48,10 @@ package body Temperature_Map is
       for I in Row_Z3'Range loop
          for J in Col_Z3'Range loop
 
-            loop
-               Rnd_Temp := Inverse_Temperature_CDF;
-               exit when Rnd_Temp /= 2;
-            end loop;
+            --  loop
+            Rnd_Temp := Inverse_Temperature_CDF;
+            --     exit when Rnd_Temp /= 2;
+            --  end loop;
 
             Temperature_Map (I, J) := Rnd_Temp;
          end loop;
