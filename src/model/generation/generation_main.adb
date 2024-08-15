@@ -25,8 +25,8 @@ begin
 
    Init_Temperature_Map_20 (Temp_Map_20);
    Smooth_Temperature (Temp_Map_20);
-   Print_Map_20 (Temp_Map_20);
-   --  Quadruple_Map (From => Temp_Map_20, To => Temp_Map_80);
+   Quadruple_Map (From => Temp_Map_20, To => Temp_Map_80);
+   Print_Map_80 (Temp_Map_80);
 
    --  Zoom
    --    (Source      => "Layer_4.png", Multiply => Zoom_Levels (2), --  x40

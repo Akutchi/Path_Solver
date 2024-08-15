@@ -29,8 +29,8 @@ package Temperature_Map is
 
    type Temperature_Map_20 is array (Row_20, Col_20) of Temperature_Type;
 
-   type Row_80 is range 0 .. 79;
-   type Col_80 is range 0 .. 79;
+   subtype Row_80 is Lign_Type range 0 .. 79;
+   subtype Col_80 is Lign_Type range 0 .. 79;
 
    type Temperature_Map_80 is array (Row_80, Col_80) of Temperature_Type;
 
@@ -52,12 +52,9 @@ package Temperature_Map is
      (From : Temperature_Map_20; To : out Temperature_Map_80);
 
    procedure Print_Map_20 (T_M : Temperature_Map_20);
+   procedure Print_Map_80 (T_M : Temperature_Map_80);
 
 private
-
-   function f (x : Lign_Type) return Lign_Type;
-   --  f(0) = 1, f(Width) = Width - 1, f(Height) = Height - 1
-   --  Allow to handle general border case substraction (Cf Smooth_Temperature)
 
    function Border_Case_Need_Smoothing
      (T_M : Temperature_Map_20; I, J : Lign_Type; Ci, Cj : Lign_Type)
