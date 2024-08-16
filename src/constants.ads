@@ -30,6 +30,7 @@ package Constants is
    Z4 : constant Positive := 200;
    Z5 : constant Positive := 400;
    Z6 : constant Positive := 800;
+   Z7 : constant Positive := 1_600;
 
    Temperature_Base      : constant Positive := Z3;
    Temperature_Quadruple : constant Positive := Z5;

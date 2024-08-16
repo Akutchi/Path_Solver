@@ -23,22 +23,32 @@ with Temperature_Map; use Temperature_Map;
 
 package Generation is
 
-   type Zoom_Levels_List is array (Natural range 0 .. 5) of Positive;
-   Zoom_Levels : constant Zoom_Levels_List := (Z1, Z2, Z3, Z4, Z5, Z6);
+   type Zoom_Levels_List is array (Natural range 0 .. 6) of Positive;
+   Zoom_Levels : constant Zoom_Levels_List := (Z1, Z2, Z3, Z4, Z5, Z6, Z7);
 
-   procedure Island (Source : String);
-   procedure Zoom (Source : String; Multiply : Positive; Destination : String);
-   procedure Add_Islands
-     (Source : String; Current_Zoom : Positive; Multiplier : Integer := 1);
-   procedure Remove_Too_Much_Ocean (Source : String);
-   procedure Place_Hills
-     (Source : String; Current_Zoom : Positive; Multiplier : Integer);
-   procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
+   procedure Generate_Baseline;
+   procedure Generate_Biomes;
 
 private
 
-   function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer;
    function Surrounded_By_Land
      (Data : Image_Data; I, J : Lign_Type) return Boolean;
+
+   procedure Island (Source : String);
+
+   procedure Zoom (Source : String; Multiply : Positive; Destination : String);
+
+   procedure Add_Islands (Source : String; Current_Zoom : Positive);
+   --  Here, we don't handle borders (it is simpler) as we have to check
+   --  the (horizontal/vertical) neighbourhood around a point.
+
+   procedure Remove_Too_Much_Ocean (Source : String; Current_Zoom : Positive);
+   --  Here, we don't handle borders (it is simpler) as we have to check
+   --  the neighbourhood around a point.
+
+   procedure Place_Hills
+     (Source : String; Current_Zoom : Positive; Multiplier : Integer);
+
+   procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
 
 end Generation;

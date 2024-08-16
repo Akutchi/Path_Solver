@@ -11,6 +11,7 @@ package body Generation.Random_Position is
       Reset (GZ4);
       Reset (GZ5);
       Reset (GZ6);
+      Reset (GZ7);
 
       case Zoom is
 
@@ -26,6 +27,8 @@ package body Generation.Random_Position is
             return (Random (GZ5), Random (GZ5));
          when Z6 =>
             return (Random (GZ6), Random (GZ6));
+         when Z7 =>
+            return (Random (GZ7), Random (GZ7));
 
             --  This should never happen
          when others =>
@@ -54,6 +57,8 @@ package body Generation.Random_Position is
             return Draw (Z5);
          when Z6 =>
             return Draw (Z6);
+         when Z7 =>
+            return Draw (Z7);
 
             --  This should never happen
          when others =>

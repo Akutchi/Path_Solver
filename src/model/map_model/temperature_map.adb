@@ -2,6 +2,10 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body Temperature_Map is
 
+   -----------------------------
+   -- Inverse_Temperature_CDF --
+   -----------------------------
+
    function Inverse_Temperature_CDF return Temperature_Type is
 
       Rnd_Type : Ada.Numerics.Float_Random.Uniformly_Distributed;
@@ -34,10 +38,10 @@ package body Temperature_Map is
    end Inverse_Temperature_CDF;
 
    -----------------------------
-   -- Init_Temperature_Map_Z3 --
+   -- Init_Temperature_Map_Z2 --
    -----------------------------
 
-   procedure Init_Temperature_Map_Z3 (Temperature_Map : out Temperature_Map_Z3)
+   procedure Init_Temperature_Map_Z2 (Temperature_Map : out Temperature_Map_Z2)
    is
 
       Rnd_Temp : Temperature_Type;
@@ -45,8 +49,8 @@ package body Temperature_Map is
 
       Random_Temperature.Reset (G_T);
 
-      for I in Row_Z3'Range loop
-         for J in Col_Z3'Range loop
+      for I in Row_Z2'Range loop
+         for J in Col_Z2'Range loop
 
             --  loop
             Rnd_Temp := Inverse_Temperature_CDF;
@@ -57,14 +61,14 @@ package body Temperature_Map is
          end loop;
       end loop;
 
-   end Init_Temperature_Map_Z3;
+   end Init_Temperature_Map_Z2;
 
    --------------------------------
    -- Border_Case_Need_Smoothing --
    --------------------------------
 
    function Border_Case_Need_Smoothing
-     (T_M : Temperature_Map_Z3; I, J : Lign_Type; Ci, Cj : Lign_Type)
+     (T_M : Temperature_Map_Z2; I, J : Lign_Type; Ci, Cj : Lign_Type)
       return Boolean
    is
       Two_Way    : Natural;
@@ -123,7 +127,7 @@ package body Temperature_Map is
    --------------------
 
    function Need_Smoothing
-     (T_M : Temperature_Map_Z3; I, J : Lign_Type) return Boolean
+     (T_M : Temperature_Map_Z2; I, J : Lign_Type) return Boolean
    is
 
       Balanced_4 : constant Positive := 4;
@@ -133,15 +137,15 @@ package body Temperature_Map is
 
       if Border_Case_Need_Smoothing (T_M, I, J, 0, 0)
         or else Border_Case_Need_Smoothing
-          (T_M, I, J, Row_Z3'Last, Col_Z3'Last)
+          (T_M, I, J, Row_Z2'Last, Col_Z2'Last)
       then
          return True;
       end if;
 
-      --  If does not need smoothing, will still return false and continue
-      --  leading to index check failed.
+      --  If the case has a 0 or is at an edge and does not need smoothing, it
+      --  will still return false and continue leading to index check failed.
       if (I = 0 or else J = 0)
-        or else (I = Row_Z3'Last or else J = Col_Z3'Last)
+        or else (I = Row_Z2'Last or else J = Col_Z2'Last)
       then
          return False;
       end if;
@@ -160,11 +164,11 @@ package body Temperature_Map is
    -- Smooth_Temperature --
    ------------------------
 
-   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z3) is
+   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z2) is
    begin
 
-      for I in Row_Z3'Range loop
-         for J in Col_Z3'Range loop
+      for I in Row_Z2'Range loop
+         for J in Col_Z2'Range loop
 
             if Need_Smoothing (Temperature_Map, I, J) then
 
@@ -183,30 +187,35 @@ package body Temperature_Map is
    end Smooth_Temperature;
 
    -------------------
-   -- Quadruple_Map --
+   -- Scale_Map --
    -------------------
 
-   procedure Quadruple_Map
-     (From : Temperature_Map_Z3; To : out Temperature_Map_Z5)
+   procedure Scale_Map (From : Temperature_Map_Z2; To : out Temperature_Map_Z5)
    is
       I, J : Lign_Type := 0; --  Base coords
       K, L : Lign_Type := 0; --  Zoomed Coords
+
+      Scaling_Factor : constant Positive :=
+        Positive ((Row_Z5'Last + 1) / (Row_Z2'Last + 1));
+
+      Scaling_Factor_LT : constant Lign_Type := Lign_Type (Scaling_Factor);
+
    begin
 
       To := (others => (others => 1));
       --  without it, invalid data when printing
-      --  must be missing smth.
+      --  must be missing some values without realizing it.
 
       loop
 
-         exit when L > Col_Z5'Last - 3;
+         exit when L > Col_Z5'Last - (Scaling_Factor_LT - 1);
 
          I := 0;
          K := 0;
 
          loop
 
-            exit when K > Row_Z5'Last - 3;
+            exit when K > Row_Z5'Last - (Scaling_Factor_LT - 1);
 
             declare
 
@@ -214,54 +223,41 @@ package body Temperature_Map is
 
             begin
 
-               To (K, L)     := Value;
-               To (K, L + 1) := Value;
-               To (K, L + 2) := Value;
-               To (K, L + 3) := Value;
+               for M in 0 .. Scaling_Factor_LT - 1 loop
+                  for N in 0 .. Scaling_Factor_LT - 1 loop
 
-               To (K + 1, L)     := Value;
-               To (K + 1, L + 1) := Value;
-               To (K + 1, L + 2) := Value;
-               To (K + 1, L + 3) := Value;
-
-               To (K + 2, L)     := Value;
-               To (K + 2, L + 1) := Value;
-               To (K + 2, L + 2) := Value;
-               To (K + 2, L + 3) := Value;
-
-               To (K + 3, L)     := Value;
-               To (K + 3, L + 1) := Value;
-               To (K + 3, L + 2) := Value;
-               To (K + 3, L + 3) := Value;
+                     To (K + M, L + N) := Value;
+                  end loop;
+               end loop;
 
             end;
 
             I := I + 1;
-            K := K + 4;
+            K := K + Scaling_Factor_LT;
 
          end loop;
 
          J := J + 1;
-         L := L + 4;
+         L := L + Scaling_Factor_LT;
 
       end loop;
-   end Quadruple_Map;
+   end Scale_Map;
 
    ------------------
-   -- Print_Map_Z3 --
+   -- Print_Map_Z2 --
    ------------------
 
-   procedure Print_Map_Z3 (T_M : Temperature_Map_Z3) is
+   procedure Print_Map_Z2 (T_M : Temperature_Map_Z2) is
    begin
 
-      for I in Row_Z3'Range loop
-         for J in Col_Z3'Range loop
+      for I in Row_Z2'Range loop
+         for J in Col_Z2'Range loop
             Put (Temperature_Type'Image (T_M (I, J)) & " ");
          end loop;
          Put_Line ("");
       end loop;
 
-   end Print_Map_Z3;
+   end Print_Map_Z2;
 
    ------------------
    -- Print_Map_Z5 --

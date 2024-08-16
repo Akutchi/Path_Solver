@@ -9,6 +9,9 @@ with Image_IO.Operations; use Image_IO.Operations;
 with RGBA;                       use RGBA;
 with Generation.Random_Biome;    use Generation.Random_Biome;
 with Generation.Random_Position; use Generation.Random_Position;
+with Generation.Math;            use Generation.Math;
+
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Generation is
 
@@ -137,15 +140,23 @@ package body Generation is
    -- Add_Islands --
    -----------------
 
-   procedure Add_Islands
-     (Source : String; Current_Zoom : Positive; Multiplier : Integer := 1)
-   is
+   procedure Add_Islands (Source : String; Current_Zoom : Positive) is
 
-      N                : constant Float    := Float (Current_Zoom);
-      Stochastic_Tries : constant Positive :=
-        Positive (N * Log (N, Ada.Numerics.e)) * Multiplier;
-
+      N     : constant Positive := Current_Zoom;
       Image : Handle;
+
+      function Choose_Land_Or_Ocean return Gdk_RGBA is
+
+         x : Ada.Numerics.Float_Random.Uniformly_Distributed;
+
+      begin
+
+         Ada.Numerics.Float_Random.Reset (Gf);
+         x := Ada.Numerics.Float_Random.Random (Gf);
+
+         return (if x > 0.4 then Ocean else Rocks);
+
+      end Choose_Land_Or_Ocean;
 
    begin
 
@@ -157,45 +168,41 @@ package body Generation is
 
       begin
 
-         for I in 1 .. Stochastic_Tries loop
+         for i_index in 1 .. N - 2 loop
+            for j_index in 1 .. N - 2 loop
 
-            declare
+               declare
 
-               Coords : constant Point := Draw_Random_Position (Current_Zoom);
-               Lossy_Color : constant Gdk_RGBA :=
-                 Color_Info_To_GdkRGBA
-                   (Get_Pixel_Color (Data, Coords.X, Coords.Y));
+                  I : constant Pos := Pos (i_index);
+                  J : constant Pos := Pos (j_index);
 
-            begin
+               begin
 
-               if RGBA."=" (Lossy_Color, Ocean) then
+                  if norm (Gradient_x (Data, I, J)) > 0.0
+                    or else norm (Gradient_y (Data, I, J)) > 0.0
+                  then
 
-                  Put_Pixel (Data, Coords.X, Coords.Y, Rocks);
+                     Put_Pixel (Data, I - 1, J - 1, Choose_Land_Or_Ocean);
+                     Put_Pixel (Data, I, J - 1, Choose_Land_Or_Ocean);
+                     Put_Pixel (Data, I + 1, J, Choose_Land_Or_Ocean);
 
-               end if;
+                     Put_Pixel (Data, I - 1, J, Choose_Land_Or_Ocean);
+                     Put_Pixel (Data, I, J, Choose_Land_Or_Ocean);
+                     Put_Pixel (Data, I + 1, J, Choose_Land_Or_Ocean);
 
-            end;
+                     Put_Pixel (Data, I - 1, J + 1, Choose_Land_Or_Ocean);
+                     Put_Pixel (Data, I, J + 1, Choose_Land_Or_Ocean);
+                     Put_Pixel (Data, I + 1, J + 1, Choose_Land_Or_Ocean);
 
+                  end if;
+               end;
+            end loop;
          end loop;
 
          Write_PNG (Image_Destination & Source, Data);
       end;
 
    end Add_Islands;
-
-   -------------
-   -- Is_Land --
-   -------------
-
-   function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer is
-
-      Pixel : constant Gdk_RGBA :=
-        Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, Pos (I), Pos (J)));
-   begin
-
-      return (if RGBA."=" (Pixel, Rocks) then 1 else 0);
-
-   end Is_Land;
 
    ------------------------
    -- Surrounded_By_Land --
@@ -204,6 +211,21 @@ package body Generation is
    function Surrounded_By_Land
      (Data : Image_Data; I, J : Lign_Type) return Boolean
    is
+
+      function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer;
+
+      function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer is
+
+         Pixel : constant Gdk_RGBA :=
+           Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, Pos (I), Pos (J)));
+      begin
+
+         return (if RGBA."=" (Pixel, Rocks) then 1 else 0);
+
+      end Is_Land;
+
+      Dilatation_Number : Positive := 5;
+
    begin
 
       return
@@ -211,7 +233,7 @@ package body Generation is
         Is_Land (Data, I, J - 1) + Is_Land (Data, I - 1, J - 1) +
         Is_Land (Data, I - 1, J) + Is_Land (Data, I - 1, J + 1) +
         Is_Land (Data, I, J + 1) + Is_Land (Data, I + 1, J + 1) >=
-        3;
+        Dilatation_Number;
 
    end Surrounded_By_Land;
 
@@ -219,12 +241,13 @@ package body Generation is
    -- Remove_Too_Much_Ocean --
    ---------------------------
 
-   procedure Remove_Too_Much_Ocean (Source : String) is
+   procedure Remove_Too_Much_Ocean (Source : String; Current_Zoom : Positive)
+   is
 
+      N     : constant Positive := Current_Zoom;
       Image : Handle;
    begin
 
-      Ada.Numerics.Float_Random.Reset (Gf);
       Read (Image_Destination & Source, Image);
 
       declare
@@ -232,8 +255,8 @@ package body Generation is
 
       begin
 
-         for I in Not_Border_Row loop
-            for J in Not_Border_Col loop
+         for I in 1 .. N - 2 loop
+            for J in 1 .. N - 2 loop
 
                declare
 
@@ -241,15 +264,11 @@ package body Generation is
                     Color_Info_To_GdkRGBA
                       (Get_Pixel_Color (Data, Pos (I), Pos (J)));
 
-                  Rnd_Switch :
-                    constant Ada.Numerics.Float_Random.Uniformly_Distributed :=
-                    Ada.Numerics.Float_Random.Random (Gf);
-
                begin
 
                   if RGBA."=" (Color, Ocean)
-                    and then Surrounded_By_Land (Data, I, J)
-                    and then Rnd_Switch > 0.3
+                    and then Surrounded_By_Land
+                      (Data, Lign_Type (I), Lign_Type (J))
                   then
 
                      Put_Pixel (Data, Pos (I), Pos (J), Rocks);
@@ -259,6 +278,8 @@ package body Generation is
 
             end loop;
          end loop;
+
+         Write_PNG (Image_Destination & Source, Data);
 
       end;
 
@@ -297,12 +318,17 @@ package body Generation is
 
             begin
 
-               if RGBA."=" (Lossy_Color, Ocean) then
+               if RGBA."=" (Lossy_Color, Desert) then
+                  Put_Pixel (Data, Coords.X, Coords.Y, Desert_Hills);
 
-                  Put_Pixel (Data, Coords.X, Coords.Y, Deep_Ocean);
+               elsif RGBA."=" (Lossy_Color, Plain) then
+                  Put_Pixel (Data, Coords.X, Coords.Y, Plain_Hills);
 
-               else
-                  Put_Pixel (Data, Coords.X, Coords.Y, Rocky_Hills);
+               elsif RGBA."=" (Lossy_Color, Snowy) then
+                  Put_Pixel (Data, Coords.X, Coords.Y, Snowy_Hills);
+
+               elsif RGBA."=" (Lossy_Color, Ice) then
+                  Put_Pixel (Data, Coords.X, Coords.Y, Ice_Hills);
 
                end if;
 
@@ -357,21 +383,6 @@ package body Generation is
                         when Freezing =>
                            Put_Pixel (Data, I, J, Ice);
                      end case;
-
-                  elsif RGBA."=" (Color_Gdk, Rocky_Hills) then
-
-                     case T is
-
-                        when Warm =>
-                           Put_Pixel (Data, I, J, Desert_Hills);
-                        when Temperate =>
-                           Put_Pixel (Data, I, J, Plain_Hills);
-                        when Cold =>
-                           Put_Pixel (Data, I, J, Snowy_Hills);
-                        when Freezing =>
-                           Put_Pixel (Data, I, J, Ice_Hills);
-                     end case;
-
                   end if;
 
                end;
@@ -379,9 +390,83 @@ package body Generation is
          end loop;
 
          Write_PNG (Image_Destination & Source, Data);
-
       end;
 
    end Place_Biomes;
+
+   -----------------------
+   -- Generate_Baseline --
+   -----------------------
+
+   procedure Generate_Baseline is
+
+      x2  : constant Positive := Zoom_Levels (0);
+      x4  : constant Positive := Zoom_Levels (1);
+      x8  : constant Positive := Zoom_Levels (2);
+      x16 : constant Positive := Zoom_Levels (3);
+      x32 : constant Positive := Zoom_Levels (4);
+
+   begin
+
+      --  e.g 5x5
+      Island ("Layer_1.png");
+
+      --  e.g 5x5 -> 10x10
+      Zoom
+        (Source      => "Layer_1.png", Multiply => x2,
+         Destination => "Layer_2.png");
+
+      Add_Islands (Source => "Layer_2.png", Current_Zoom => x4);
+
+      Zoom
+        (Source      => "Layer_2.png", Multiply => x4,
+         Destination => "Layer_3.png");
+
+      Add_Islands (Source => "Layer_3.png", Current_Zoom => x8);
+      Add_Islands (Source => "Layer_3.png", Current_Zoom => x8);
+      Add_Islands (Source => "Layer_3.png", Current_Zoom => x8);
+
+      Remove_Too_Much_Ocean ("Layer_3.png", Current_Zoom => x8);
+
+      Zoom
+        (Source      => "Layer_3.png", Multiply => x8,
+         Destination => "Layer_4.png");
+
+      Zoom
+        (Source      => "Layer_4.png", Multiply => x16,
+         Destination => "Layer_5.png");
+
+      --  Add_Islands (Source => "Layer_5.png", Current_Zoom => x32);
+
+   end Generate_Baseline;
+
+   ---------------------
+   -- Generate_Biomes --
+   ---------------------
+
+   procedure Generate_Biomes is
+
+      Temp_Map_Z2 : Temperature_Map_Z2;
+      Temp_Map_Z5 : Temperature_Map_Z5;
+
+      x32 : constant Positive := Zoom_Levels (4);
+      x64 : constant Positive := Zoom_Levels (5);
+
+   begin
+
+      Init_Temperature_Map_Z2 (Temp_Map_Z2);
+      Smooth_Temperature (Temp_Map_Z2);
+      Scale_Map (From => Temp_Map_Z2, To => Temp_Map_Z5);
+
+      Place_Biomes ("Layer_5.png", Temp_Map_Z5);
+
+      Zoom
+        (Source      => "Layer_5.png", Multiply => x32,
+         Destination => "Layer_6.png");
+
+      Place_Hills
+        (Source => "Layer_6.png", Current_Zoom => x64, Multiplier => 4);
+
+   end Generate_Biomes;
 
 end Generation;
