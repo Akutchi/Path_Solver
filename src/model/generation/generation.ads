@@ -29,8 +29,9 @@ package Generation is
    Zoom_Levels : constant Zoom_Levels_List := (Z1, Z2, Z3, Z4, Z5, Z6, Z7);
 
    procedure Generate_Baseline;
-   procedure Generate_Biomes;
    procedure Generate_Hills_Model;
+   procedure Generate_Deep_Ocean_Model;
+   procedure Generate_Biomes;
 
 private
 
@@ -52,7 +53,7 @@ private
    --  Here, we don't handle borders (it is simpler) as we have to check
    --  the neighbourhood around a point.
 
-   procedure Place_Hills (Source : String; Current_Zoom : Positive);
+   procedure Place_Topography (Source : String; Current_Zoom : Positive);
 
    procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
 

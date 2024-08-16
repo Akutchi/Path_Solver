@@ -340,24 +340,27 @@ package body Generation is
 
    end Place_Biomes;
 
-   -----------------
-   -- Place_Hills --
-   -----------------
+   ----------------------
+   -- Place_Topography --
+   ----------------------
 
-   procedure Place_Hills (Source : String; Current_Zoom : Positive) is
+   procedure Place_Topography (Source : String; Current_Zoom : Positive) is
 
       N : constant Integer := Current_Zoom;
 
       Hills_Map : Handle;
+      Ocean_Map : Handle;
       Biome_Map : Handle;
 
    begin
 
-      Read (Image_Destination & Source, Biome_Map);
       Read (Image_Destination & "Hills_6.png", Hills_Map);
+      Read (Image_Destination & "Ocean_6.png", Ocean_Map);
+      Read (Image_Destination & Source, Biome_Map);
 
       declare
          Data_Hills : constant Image_Data := Hills_Map.Value;
+         Data_Ocean : constant Image_Data := Ocean_Map.Value;
          Data_Biome : Image_Data          := Biome_Map.Value;
       begin
 
@@ -371,6 +374,9 @@ package body Generation is
 
                   Hill_Map_Pixel : constant Gdk_RGBA :=
                     Color_Info_To_GdkRGBA (Get_Pixel_Color (Data_Hills, I, J));
+
+                  Ocean_Map_Pixel : constant Gdk_RGBA :=
+                    Color_Info_To_GdkRGBA (Get_Pixel_Color (Data_Ocean, I, J));
 
                   Biome_Map_Pixel : constant Gdk_RGBA :=
                     Color_Info_To_GdkRGBA (Get_Pixel_Color (Data_Biome, I, J));
@@ -394,6 +400,14 @@ package body Generation is
                      end if;
                   end if;
 
+                  if RGBA."=" (Ocean_Map_Pixel, Rocks)
+                    and then RGBA."=" (Biome_Map_Pixel, Ocean)
+                  then
+
+                     Put_Pixel (Data_Biome, I, J, Deep_Ocean);
+
+                  end if;
+
                end;
             end loop;
          end loop;
@@ -401,7 +415,7 @@ package body Generation is
          Write_PNG (Image_Destination & Source, Data_Biome);
       end;
 
-   end Place_Hills;
+   end Place_Topography;
 
    -----------------------
    -- Generate_Baseline --
@@ -502,6 +516,57 @@ package body Generation is
 
    end Generate_Hills_Model;
 
+   -------------------------------
+   -- Generate_Deep_Ocean_Model --
+   -------------------------------
+
+   procedure Generate_Deep_Ocean_Model is
+
+      x2  : constant Positive := Zoom_Levels (0);
+      x4  : constant Positive := Zoom_Levels (1);
+      x8  : constant Positive := Zoom_Levels (2);
+      x16 : constant Positive := Zoom_Levels (3);
+      x32 : constant Positive := Zoom_Levels (4);
+
+   begin
+
+      Island ("Ocean_1.png");
+
+      Zoom
+        (Source      => "Ocean_1.png", Multiply => x2,
+         Destination => "Ocean_2.png");
+
+      Add_Islands (Source => "Ocean_2.png", Current_Zoom => x4);
+
+      Zoom
+        (Source      => "Ocean_2.png", Multiply => x4,
+         Destination => "Ocean_3.png");
+
+      Add_Islands (Source => "Ocean_3.png", Current_Zoom => x8);
+      Add_Islands (Source => "Ocean_3.png", Current_Zoom => x8);
+      Add_Islands (Source => "Ocean_3.png", Current_Zoom => x8);
+
+      Remove_Too_Much
+        (Rocks, From => Ocean, Source => "Ocean_3.png", Current_Zoom => x8,
+         Dilatation_Number => 7);
+
+      Remove_Too_Much
+        (Ocean, From => Rocks, Source => "Ocean_3.png", Current_Zoom => x8);
+
+      Zoom
+        (Source      => "Ocean_3.png", Multiply => x8,
+         Destination => "Ocean_4.png");
+
+      Zoom
+        (Source      => "Ocean_4.png", Multiply => x16,
+         Destination => "Ocean_5.png");
+
+      Zoom
+        (Source      => "Ocean_5.png", Multiply => x32,
+         Destination => "Ocean_6.png");
+
+   end Generate_Deep_Ocean_Model;
+
    ---------------------
    -- Generate_Biomes --
    ---------------------
@@ -526,7 +591,7 @@ package body Generation is
         (Source      => "Layer_5.png", Multiply => x32,
          Destination => "Layer_6.png");
 
-      Place_Hills (Source => "Layer_6.png", Current_Zoom => x64);
+      Place_Topography (Source => "Layer_6.png", Current_Zoom => x64);
 
    end Generate_Biomes;
 

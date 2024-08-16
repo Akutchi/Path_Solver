@@ -40,7 +40,7 @@ package Constants is
    Rocky_Hills : constant Gdk_RGBA := (0.30, 0.30, 0.30, 1.0);
 
    Ocean      : constant Gdk_RGBA := (0.06, 0.44, 0.87, 1.0);
-   Deep_Ocean : constant Gdk_RGBA := (0.00, 0.24, 1.0, 1.0);
+   Deep_Ocean : constant Gdk_RGBA := (0.06, 0.40, 0.60, 1.0);
 
    --  Warm
 
