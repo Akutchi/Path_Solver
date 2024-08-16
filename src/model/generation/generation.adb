@@ -1,7 +1,4 @@
-with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;
-
-with Gdk.RGBA; use Gdk.RGBA;
 
 with Image_IO.Holders;    use Image_IO.Holders;
 with Image_IO.Operations; use Image_IO.Operations;
@@ -11,14 +8,7 @@ with Generation.Random_Biome;    use Generation.Random_Biome;
 with Generation.Random_Position; use Generation.Random_Position;
 with Generation.Math;            use Generation.Math;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Generation is
-
-   package Float_Calculations is new Ada.Numerics.Generic_Elementary_Functions
-     (Float_Type => Float);
-
-   use Float_Calculations;
 
    ------------
    -- Island --
@@ -208,40 +198,50 @@ package body Generation is
    -- Surrounded_By_Land --
    ------------------------
 
-   function Surrounded_By_Land
-     (Data : Image_Data; I, J : Lign_Type) return Boolean
+   function Surrounded_By
+     (Terrain           : Gdk_RGBA; Data : Image_Data; I, J : Lign_Type;
+      Dilatation_Number : Positive := 5) return Boolean
    is
 
-      function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer;
+      function Is_Terrain
+        (Terrain : Gdk_RGBA; Data : Image_Data; I, J : Lign_Type)
+         return Integer;
 
-      function Is_Land (Data : Image_Data; I, J : Lign_Type) return Integer is
+      function Is_Terrain
+        (Terrain : Gdk_RGBA; Data : Image_Data; I, J : Lign_Type)
+         return Integer
+      is
 
          Pixel : constant Gdk_RGBA :=
            Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, Pos (I), Pos (J)));
       begin
 
-         return (if RGBA."=" (Pixel, Rocks) then 1 else 0);
+         return (if RGBA."=" (Pixel, Terrain) then 1 else 0);
 
-      end Is_Land;
-
-      Dilatation_Number : Positive := 5;
+      end Is_Terrain;
 
    begin
 
       return
-        Is_Land (Data, I + 1, J) + Is_Land (Data, I + 1, J - 1) +
-        Is_Land (Data, I, J - 1) + Is_Land (Data, I - 1, J - 1) +
-        Is_Land (Data, I - 1, J) + Is_Land (Data, I - 1, J + 1) +
-        Is_Land (Data, I, J + 1) + Is_Land (Data, I + 1, J + 1) >=
+        Is_Terrain (Terrain, Data, I + 1, J) +
+        Is_Terrain (Terrain, Data, I + 1, J - 1) +
+        Is_Terrain (Terrain, Data, I, J - 1) +
+        Is_Terrain (Terrain, Data, I - 1, J - 1) +
+        Is_Terrain (Terrain, Data, I - 1, J) +
+        Is_Terrain (Terrain, Data, I - 1, J + 1) +
+        Is_Terrain (Terrain, Data, I, J + 1) +
+        Is_Terrain (Terrain, Data, I + 1, J + 1) >=
         Dilatation_Number;
 
-   end Surrounded_By_Land;
+   end Surrounded_By;
 
-   ---------------------------
-   -- Remove_Too_Much_Ocean --
-   ---------------------------
+   ---------------------
+   -- Remove_Too_Much --
+   ---------------------
 
-   procedure Remove_Too_Much_Ocean (Source : String; Current_Zoom : Positive)
+   procedure Remove_Too_Much
+     (Terrain      : Gdk_RGBA; From : Gdk_RGBA; Source : String;
+      Current_Zoom : Positive; Dilatation_Number : Positive := 5)
    is
 
       N     : constant Positive := Current_Zoom;
@@ -266,12 +266,13 @@ package body Generation is
 
                begin
 
-                  if RGBA."=" (Color, Ocean)
-                    and then Surrounded_By_Land
-                      (Data, Lign_Type (I), Lign_Type (J))
+                  if RGBA."=" (Color, Terrain)
+                    and then Surrounded_By
+                      (From, Data, Lign_Type (I), Lign_Type (J),
+                       Dilatation_Number)
                   then
 
-                     Put_Pixel (Data, Pos (I), Pos (J), Rocks);
+                     Put_Pixel (Data, Pos (I), Pos (J), From);
 
                   end if;
                end;
@@ -283,62 +284,7 @@ package body Generation is
 
       end;
 
-   end Remove_Too_Much_Ocean;
-
-   -----------------
-   -- Place_Hills --
-   -----------------
-
-   procedure Place_Hills
-     (Source : String; Current_Zoom : Positive; Multiplier : Integer)
-   is
-
-      N                : constant Float    := Float (Current_Zoom);
-      Stochastic_Tries : constant Positive :=
-        Positive (N * Log (N, Ada.Numerics.e)) * Multiplier;
-
-      Image : Handle;
-
-   begin
-
-      Read (Image_Destination & Source, Image);
-
-      declare
-         Data : Image_Data := Image.Value;
-      begin
-
-         for I in 0 .. Stochastic_Tries loop
-
-            declare
-
-               Coords : constant Point := Draw_Random_Position (Current_Zoom);
-               Lossy_Color : constant Gdk_RGBA :=
-                 Color_Info_To_GdkRGBA
-                   (Get_Pixel_Color (Data, Coords.X, Coords.Y));
-
-            begin
-
-               if RGBA."=" (Lossy_Color, Desert) then
-                  Put_Pixel (Data, Coords.X, Coords.Y, Desert_Hills);
-
-               elsif RGBA."=" (Lossy_Color, Plain) then
-                  Put_Pixel (Data, Coords.X, Coords.Y, Plain_Hills);
-
-               elsif RGBA."=" (Lossy_Color, Snowy) then
-                  Put_Pixel (Data, Coords.X, Coords.Y, Snowy_Hills);
-
-               elsif RGBA."=" (Lossy_Color, Ice) then
-                  Put_Pixel (Data, Coords.X, Coords.Y, Ice_Hills);
-
-               end if;
-
-            end;
-         end loop;
-
-         Write_PNG (Image_Destination & Source, Data);
-      end;
-
-   end Place_Hills;
+   end Remove_Too_Much;
 
    procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5) is
 
@@ -394,6 +340,69 @@ package body Generation is
 
    end Place_Biomes;
 
+   -----------------
+   -- Place_Hills --
+   -----------------
+
+   procedure Place_Hills (Source : String; Current_Zoom : Positive) is
+
+      N : constant Integer := Current_Zoom;
+
+      Hills_Map : Handle;
+      Biome_Map : Handle;
+
+   begin
+
+      Read (Image_Destination & Source, Biome_Map);
+      Read (Image_Destination & "Hills_6.png", Hills_Map);
+
+      declare
+         Data_Hills : constant Image_Data := Hills_Map.Value;
+         Data_Biome : Image_Data          := Biome_Map.Value;
+      begin
+
+         for i_index in 0 .. N - 1 loop
+            for j_index in 0 .. N - 1 loop
+
+               declare
+
+                  I : constant Pos := Pos (i_index);
+                  J : constant Pos := Pos (j_index);
+
+                  Hill_Map_Pixel : constant Gdk_RGBA :=
+                    Color_Info_To_GdkRGBA (Get_Pixel_Color (Data_Hills, I, J));
+
+                  Biome_Map_Pixel : constant Gdk_RGBA :=
+                    Color_Info_To_GdkRGBA (Get_Pixel_Color (Data_Biome, I, J));
+
+               begin
+
+                  if RGBA."=" (Hill_Map_Pixel, Rocks) then
+
+                     if RGBA."=" (Biome_Map_Pixel, Desert) then
+                        Put_Pixel (Data_Biome, I, J, Desert_Hills);
+
+                     elsif RGBA."=" (Biome_Map_Pixel, Plain) then
+                        Put_Pixel (Data_Biome, I, J, Plain_Hills);
+
+                     elsif RGBA."=" (Biome_Map_Pixel, Snowy) then
+                        Put_Pixel (Data_Biome, I, J, Snowy_Hills);
+
+                     elsif RGBA."=" (Biome_Map_Pixel, Ice) then
+                        Put_Pixel (Data_Biome, I, J, Ice_Hills);
+
+                     end if;
+                  end if;
+
+               end;
+            end loop;
+         end loop;
+
+         Write_PNG (Image_Destination & Source, Data_Biome);
+      end;
+
+   end Place_Hills;
+
    -----------------------
    -- Generate_Baseline --
    -----------------------
@@ -404,7 +413,6 @@ package body Generation is
       x4  : constant Positive := Zoom_Levels (1);
       x8  : constant Positive := Zoom_Levels (2);
       x16 : constant Positive := Zoom_Levels (3);
-      x32 : constant Positive := Zoom_Levels (4);
 
    begin
 
@@ -426,7 +434,12 @@ package body Generation is
       Add_Islands (Source => "Layer_3.png", Current_Zoom => x8);
       Add_Islands (Source => "Layer_3.png", Current_Zoom => x8);
 
-      Remove_Too_Much_Ocean ("Layer_3.png", Current_Zoom => x8);
+      Remove_Too_Much
+        (Ocean, From => Rocks, Source => "Layer_3.png", Current_Zoom => x8);
+
+      Remove_Too_Much
+        (Rocks, From => Ocean, Source => "Layer_3.png", Current_Zoom => x8,
+         Dilatation_Number => 6);
 
       Zoom
         (Source      => "Layer_3.png", Multiply => x8,
@@ -436,9 +449,55 @@ package body Generation is
         (Source      => "Layer_4.png", Multiply => x16,
          Destination => "Layer_5.png");
 
-      --  Add_Islands (Source => "Layer_5.png", Current_Zoom => x32);
-
    end Generate_Baseline;
+
+   --------------------------
+   -- Generate_Hilld_Model --
+   --------------------------
+
+   procedure Generate_Hills_Model is
+
+      x2  : constant Positive := Zoom_Levels (0);
+      x4  : constant Positive := Zoom_Levels (1);
+      x8  : constant Positive := Zoom_Levels (2);
+      x16 : constant Positive := Zoom_Levels (3);
+      x32 : constant Positive := Zoom_Levels (4);
+
+   begin
+
+      Island ("Hills_1.png");
+
+      Zoom
+        (Source      => "Hills_1.png", Multiply => x2,
+         Destination => "Hills_2.png");
+
+      Add_Islands (Source => "Hills_2.png", Current_Zoom => x4);
+
+      Zoom
+        (Source      => "Hills_2.png", Multiply => x4,
+         Destination => "Hills_3.png");
+
+      Add_Islands (Source => "Hills_3.png", Current_Zoom => x8);
+      Add_Islands (Source => "Hills_3.png", Current_Zoom => x8);
+      Add_Islands (Source => "Hills_3.png", Current_Zoom => x8);
+
+      Remove_Too_Much
+        (Rocks, From => Ocean, Source => "Hills_3.png", Current_Zoom => x8,
+         Dilatation_Number => 7);
+
+      Zoom
+        (Source      => "Hills_3.png", Multiply => x8,
+         Destination => "Hills_4.png");
+
+      Zoom
+        (Source      => "Hills_4.png", Multiply => x16,
+         Destination => "Hills_5.png");
+
+      Zoom
+        (Source      => "Hills_5.png", Multiply => x32,
+         Destination => "Hills_6.png");
+
+   end Generate_Hills_Model;
 
    ---------------------
    -- Generate_Biomes --
@@ -464,8 +523,7 @@ package body Generation is
         (Source      => "Layer_5.png", Multiply => x32,
          Destination => "Layer_6.png");
 
-      Place_Hills
-        (Source => "Layer_6.png", Current_Zoom => x64, Multiplier => 4);
+      Place_Hills (Source => "Layer_6.png", Current_Zoom => x64);
 
    end Generate_Biomes;
 

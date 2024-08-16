@@ -1,7 +1,5 @@
 with Ada.Numerics.Generic_Elementary_Functions;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Generation.Math is
 
    package Float_Calculations is new Ada.Numerics.Generic_Elementary_Functions

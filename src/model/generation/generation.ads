@@ -16,6 +16,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Gdk.RGBA; use Gdk.RGBA;
+
 with Image_IO; use Image_IO;
 
 with Constants;       use Constants;
@@ -28,11 +30,13 @@ package Generation is
 
    procedure Generate_Baseline;
    procedure Generate_Biomes;
+   procedure Generate_Hills_Model;
 
 private
 
-   function Surrounded_By_Land
-     (Data : Image_Data; I, J : Lign_Type) return Boolean;
+   function Surrounded_By
+     (Terrain           : Gdk_RGBA; Data : Image_Data; I, J : Lign_Type;
+      Dilatation_Number : Positive := 5) return Boolean;
 
    procedure Island (Source : String);
 
@@ -42,12 +46,13 @@ private
    --  Here, we don't handle borders (it is simpler) as we have to check
    --  the (horizontal/vertical) neighbourhood around a point.
 
-   procedure Remove_Too_Much_Ocean (Source : String; Current_Zoom : Positive);
+   procedure Remove_Too_Much
+     (Terrain      : Gdk_RGBA; From : Gdk_RGBA; Source : String;
+      Current_Zoom : Positive; Dilatation_Number : Positive := 5);
    --  Here, we don't handle borders (it is simpler) as we have to check
    --  the neighbourhood around a point.
 
-   procedure Place_Hills
-     (Source : String; Current_Zoom : Positive; Multiplier : Integer);
+   procedure Place_Hills (Source : String; Current_Zoom : Positive);
 
    procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
 
