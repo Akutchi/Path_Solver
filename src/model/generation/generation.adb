@@ -445,6 +445,9 @@ package body Generation is
         (Source      => "Layer_3.png", Multiply => x8,
          Destination => "Layer_4.png");
 
+      Remove_Too_Much
+        (Ocean, From => Rocks, Source => "Layer_4.png", Current_Zoom => x16);
+
       Zoom
         (Source      => "Layer_4.png", Multiply => x16,
          Destination => "Layer_5.png");
