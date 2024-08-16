@@ -11,6 +11,10 @@ As it is my first time using gtkAda, I extensively relied on
 
 ### World Generation
 
+| ![The world](./layer_templates/Layer_6.png) |
+|:--:|
+| *A world generated with a minecraft-like algorithm* |
+
 #### Introduction
 
 The first part of the project is to generate a map on which the algorithm will be able to evolve later on.
@@ -43,7 +47,6 @@ The current stack I'm using can be seen below :
 | *The current stack* |
 
 [1] For consicion some details where omitted. In reality, the temperature map pass by a Quadruple_Map function to make the futur biomes bigger.
-
 
 ## Configuration
 
