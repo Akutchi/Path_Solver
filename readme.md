@@ -11,7 +11,7 @@ As it is my first time using gtkAda, I extensively relied on
 
 ### World Generation
 
-| ![The world](./layer_templates/Layer_6.png) |
+| ![The world](./layer_templates/Layer_7.png) |
 |:--:|
 | *A world generated with a minecraft-like algorithm* |
 
@@ -30,15 +30,19 @@ The processus - the stack - is so named as it is a composition of many layers, e
 
 - Zoom : Create a new map double the size from the last.
 
-- Add_Islands : Add land to the current map.
+- Add_Islands : Add/Erode land to the current map with the help a horizontal and a vertical gradient.
 
-- Init_Temperature_Z5 / Smooth_Temperature : Initilize a temperature map (matrix with value from 1 to 4) which will be used to decide which biome will goes where, and smooth it to allow for less abrupt variations.
+- Init_Temperature_Z2 : Initialize a temperature map (matrix with value from 1 to 4) which will be used to decide which biome will goes where.
+The map is generated using [perlin noise](https://en.wikipedia.org/wiki/Perlin_noise).
 
-- Remove_Too_Much_Ocean : somewhat remove lakes to make land feel less continental and much more connected.
+- Smooth_Temperature : Smooth the temperature map for less abrupt variations.
 
-- Place_Hills : Place (with a uniform noise) darker rocks that will (with the temperature) become elevated terrain.
+- Remove_Too_Much : This is a [dilation / erosion operator](https://en.wikipedia.org/wiki/Mathematical_morphology#Basic_operators) (depending on what you choose to erode) that I initialy created to remove small patch of ocean (think of a 1x1 ocean in land).
 
-- Place_Biome : Use the temperature map from earlier [1] to decide what color will the rock and rocky hills take.
+- Place_Biome : Use the temperature map from earlier [1] to decide what color will the rocks take.
+
+- Place_Topography : Using the same general algorithm as the [Generate_Baseline function(L.462)](./src/model/generation/generation.adb), it creates a general map
+for the ocean and the hills that are then placed on top of the previous layer.
 
 The current stack I'm using can be seen below :
 
@@ -46,7 +50,7 @@ The current stack I'm using can be seen below :
 |:--:|
 | *The current stack* |
 
-[1] For consicion some details where omitted. In reality, the temperature map pass by a Quadruple_Map function to make the futur biomes bigger.
+[1] Some details where omitted. In reality, the temperature map pass by a Scale_Map function to make the futur biomes bigger.
 
 ## Configuration
 
@@ -72,7 +76,7 @@ alternatively ```alr run``` to build and execute. The generated binary file is l
 
 There is currently to binaries associated with the project :
 - path_solver : the main program visualizing Dijkstra's algorithm
-- generation_main : the program that creates the procedural map. It is a test file for developpement. Its result can be seen on the last layer (layer 6) in [layer/templates](./layer_templates/).
+- generation_main : the program that creates the procedural map. It is a test file for developpement. Its result can be seen on the last layer in [layer/templates](./layer_templates/).
 
 
 
