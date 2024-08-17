@@ -37,6 +37,87 @@ package body Temperature_Map is
 
    end Inverse_Temperature_CDF;
 
+   procedure Init_Perlin_Map (Over_Grid : out Perlin_Map) is
+   begin
+
+      for I in Perlin_Row'Range loop
+         for J in Perlin_Col'Range loop
+
+            declare
+
+               Element : Perlin_Info;
+            begin
+
+               Element.Gradient   := Random_Unit_Gradient;
+               Element.Value      := 0.0;
+               Element.Gradient.Z := 0.0;
+
+               Over_Grid (I, J) := Element;
+            end;
+         end loop;
+      end loop;
+
+   end Init_Perlin_Map;
+
+   ------------------
+   -- Perlin_Noise --
+   ------------------
+
+   function Perlin_Noise
+     (Over_Grid : Perlin_Map; I, J : Lign_Type) return Temperature_Type
+   is
+
+      function Create_Offset
+        (I, J : Lign_Type; K : Perlin_Row; L : Perlin_Col; dx, dy : Float)
+         return Vector;
+
+      function Create_Offset
+        (I, J : Lign_Type; K : Perlin_Row; L : Perlin_Col; dx, dy : Float)
+         return Vector
+      is
+         o : Vector;
+      begin
+         o.X := Float (I - Lign_Type (K)) + dx;
+         o.Y := Float (J - Lign_Type (L)) + dy;
+         o.Z := 0.0;
+
+         return o;
+      end Create_Offset;
+
+      I_Overgrid : constant Perlin_Row := Perlin_Row (I / Perlin_Shift);
+      J_Overgrid : constant Perlin_Col := Perlin_Col (J / Perlin_Shift);
+
+      offset1 : constant Vector :=
+        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 0.0, 0.0));
+      offset2 : constant Vector :=
+        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 1.0, 0.0));
+      offset3 : constant Vector :=
+        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 0.0, 1.0));
+      offset4 : constant Vector :=
+        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 1.0, 1.0));
+
+      a0, a1, a2, a3 : Float;
+      mean1, mean2   : Float;
+
+      value : Integer;
+
+   begin
+
+      a0 := dot (Over_Grid (I_Overgrid, J_Overgrid).Gradient, offset1);
+      a1 := dot (Over_Grid (I_Overgrid + 1, J_Overgrid).Gradient, offset2);
+
+      mean1 := Interpolate (a0, a1, 0.5);
+
+      a2 := dot (Over_Grid (I_Overgrid, J_Overgrid + 1).Gradient, offset3);
+      a3 := dot (Over_Grid (I_Overgrid + 1, J_Overgrid + 1).Gradient, offset4);
+
+      mean2 := Interpolate (a2, a3, 0.5);
+      value := Integer (3.0 * Interpolate (mean1, mean2, 0.5) + 1.0);
+
+      return Temperature_Type (value);
+
+   end Perlin_Noise;
+
    -----------------------------
    -- Init_Temperature_Map_Z2 --
    -----------------------------
@@ -44,20 +125,17 @@ package body Temperature_Map is
    procedure Init_Temperature_Map_Z2 (Temperature_Map : out Temperature_Map_Z2)
    is
 
-      Rnd_Temp : Temperature_Type;
+      Over_Grid : Perlin_Map;
+
    begin
 
-      Random_Temperature.Reset (G_T);
+      Init_Perlin_Map (Over_Grid);
 
-      for I in Row_Z2'Range loop
-         for J in Col_Z2'Range loop
+      for I in 0 .. Row_Z2'Last loop
+         for J in 0 .. Col_Z2'Last loop
 
-            --  loop
-            Rnd_Temp := Inverse_Temperature_CDF;
-            --     exit when Rnd_Temp /= 2;
-            --  end loop;
+            Temperature_Map (I, J) := Perlin_Noise (Over_Grid, I, J);
 
-            Temperature_Map (I, J) := Rnd_Temp;
          end loop;
       end loop;
 

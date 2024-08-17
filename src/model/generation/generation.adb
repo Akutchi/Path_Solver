@@ -4,9 +4,9 @@ with Image_IO.Holders;    use Image_IO.Holders;
 with Image_IO.Operations; use Image_IO.Operations;
 
 with RGBA;                       use RGBA;
+with Math_Operations;            use Math_Operations;
 with Generation.Random_Biome;    use Generation.Random_Biome;
 with Generation.Random_Position; use Generation.Random_Position;
-with Generation.Math;            use Generation.Math;
 
 package body Generation is
 
@@ -168,8 +168,9 @@ package body Generation is
 
                begin
 
-                  if norm (Gradient_x (Data, I, J)) > 0.0
-                    or else norm (Gradient_y (Data, I, J)) > 0.0
+                  if norm (Gradient_x (Data, Integer (I), Integer (J))) > 0.0
+                    or else
+                      norm (Gradient_y (Data, Integer (I), Integer (J))) > 0.0
                   then
 
                      Put_Pixel (Data, I - 1, J - 1, Choose_Land_Or_Ocean);
@@ -582,7 +583,7 @@ package body Generation is
    begin
 
       Init_Temperature_Map_Z2 (Temp_Map_Z2);
-      Smooth_Temperature (Temp_Map_Z2);
+      --  Smooth_Temperature (Temp_Map_Z2);
       Scale_Map (From => Temp_Map_Z2, To => Temp_Map_Z5);
 
       Place_Biomes ("Layer_5.png", Temp_Map_Z5);

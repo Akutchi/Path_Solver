@@ -1,6 +1,8 @@
 with Ada.Numerics.Discrete_Random;
 with Ada.Numerics.Float_Random;
 
+with Math_Operations; use Math_Operations;
+
 package Temperature_Map is
 
    type Temperature_Type is range 1 .. 4;
@@ -34,6 +36,19 @@ package Temperature_Map is
 
    type Temperature_Map_Z5 is array (Row_Z5, Col_Z5) of Temperature_Type;
 
+   type Perlin_Info is record
+
+      Gradient : Vector;
+      Value    : Float;
+   end record;
+
+   type Perlin_Row is range 0 .. 25;
+   type Perlin_Col is range 0 .. 25;
+
+   Perlin_Shift : constant Lign_Type := 25;
+
+   type Perlin_Map is array (Perlin_Row, Perlin_Col) of Perlin_Info;
+
    procedure Init_Temperature_Map_Z2
      (Temperature_Map : out Temperature_Map_Z2);
 
@@ -55,6 +70,16 @@ package Temperature_Map is
    procedure Print_Map_Z5 (T_M : Temperature_Map_Z5);
 
 private
+
+   procedure Init_Perlin_Map (Over_Grid : out Perlin_Map);
+
+   function Perlin_Noise
+     (Over_Grid : Perlin_Map; I, J : Lign_Type) return Temperature_Type;
+   --  I return an integer because I only want values in [|1; 4|] for the
+   --  temperature map. Algorithm description here :
+   --
+   --  FR : https://fr.wikipedia.org/wiki/Bruit_de_Perlin
+   --  EN : https://en.wikipedia.org/wiki/Perlin_noise
 
    function Border_Case_Need_Smoothing
      (T_M : Temperature_Map_Z2; I, J : Lign_Type; Ci, Cj : Lign_Type)
