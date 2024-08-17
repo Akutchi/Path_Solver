@@ -1,122 +1,8 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
+with Math_Operations; use Math_Operations;
+
 package body Temperature_Map is
-
-   -----------------------------
-   -- Inverse_Temperature_CDF --
-   -----------------------------
-
-   function Inverse_Temperature_CDF return Temperature_Type is
-
-      Rnd_Type : Ada.Numerics.Float_Random.Uniformly_Distributed;
-      Rnd_Cold : Ada.Numerics.Float_Random.Uniformly_Distributed;
-   begin
-
-      Ada.Numerics.Float_Random.Reset (Gf);
-
-      Rnd_Type := Ada.Numerics.Float_Random.Random (Gf);
-      if Rnd_Type < 0.3 then
-
-         return Warm;
-
-      elsif Rnd_Type >= 0.3 and then Rnd_Type < 0.7 then
-
-         return Temperate;
-
-      else
-
-         Rnd_Cold := Ada.Numerics.Float_Random.Random (Gf);
-         if Rnd_Cold > 0.5 then
-
-            return Cold;
-         end if;
-
-         return Freezing;
-
-      end if;
-
-   end Inverse_Temperature_CDF;
-
-   procedure Init_Perlin_Map (Over_Grid : out Perlin_Map) is
-   begin
-
-      for I in Perlin_Row'Range loop
-         for J in Perlin_Col'Range loop
-
-            declare
-
-               Element : Perlin_Info;
-            begin
-
-               Element.Gradient   := Random_Unit_Gradient;
-               Element.Value      := 0.0;
-               Element.Gradient.Z := 0.0;
-
-               Over_Grid (I, J) := Element;
-            end;
-         end loop;
-      end loop;
-
-   end Init_Perlin_Map;
-
-   ------------------
-   -- Perlin_Noise --
-   ------------------
-
-   function Perlin_Noise
-     (Over_Grid : Perlin_Map; I, J : Lign_Type) return Temperature_Type
-   is
-
-      function Create_Offset
-        (I, J : Lign_Type; K : Perlin_Row; L : Perlin_Col; dx, dy : Float)
-         return Vector;
-
-      function Create_Offset
-        (I, J : Lign_Type; K : Perlin_Row; L : Perlin_Col; dx, dy : Float)
-         return Vector
-      is
-         o : Vector;
-      begin
-         o.X := Float (I - Lign_Type (K)) + dx;
-         o.Y := Float (J - Lign_Type (L)) + dy;
-         o.Z := 0.0;
-
-         return o;
-      end Create_Offset;
-
-      I_Overgrid : constant Perlin_Row := Perlin_Row (I / Perlin_Shift);
-      J_Overgrid : constant Perlin_Col := Perlin_Col (J / Perlin_Shift);
-
-      offset1 : constant Vector :=
-        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 0.0, 0.0));
-      offset2 : constant Vector :=
-        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 1.0, 0.0));
-      offset3 : constant Vector :=
-        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 0.0, 1.0));
-      offset4 : constant Vector :=
-        Normalize (Create_Offset (I, J, I_Overgrid, J_Overgrid, 1.0, 1.0));
-
-      a0, a1, a2, a3 : Float;
-      mean1, mean2   : Float;
-
-      value : Integer;
-
-   begin
-
-      a0 := dot (Over_Grid (I_Overgrid, J_Overgrid).Gradient, offset1);
-      a1 := dot (Over_Grid (I_Overgrid + 1, J_Overgrid).Gradient, offset2);
-
-      mean1 := Interpolate (a0, a1, 0.5);
-
-      a2 := dot (Over_Grid (I_Overgrid, J_Overgrid + 1).Gradient, offset3);
-      a3 := dot (Over_Grid (I_Overgrid + 1, J_Overgrid + 1).Gradient, offset4);
-
-      mean2 := Interpolate (a2, a3, 0.5);
-      value := Integer (3.0 * Interpolate (mean1, mean2, 0.5) + 1.0);
-
-      return Temperature_Type (value);
-
-   end Perlin_Noise;
 
    -----------------------------
    -- Init_Temperature_Map_Z2 --
@@ -127,16 +13,39 @@ package body Temperature_Map is
 
       Over_Grid : Perlin_Map;
 
+      dx, dy : constant Float := 0.1;
+
+      x, y : Float := 0.0;
+
+      I : Row_Z2 := 0;
+      J : Col_Z2 := 0;
+
    begin
 
       Init_Perlin_Map (Over_Grid);
+      Temperature_Map := (others => (others => 1));
 
-      for I in 0 .. Row_Z2'Last loop
-         for J in 0 .. Col_Z2'Last loop
+      loop
 
-            Temperature_Map (I, J) := Perlin_Noise (Over_Grid, I, J);
+         exit when J >= Col_Z2'Last - 1;
+
+         x := 0.0;
+         I := 0;
+
+         loop
+            exit when I >= Row_Z2'Last - 1;
+
+            Temperature_Map (I, J) :=
+              Temperature_Type (Perlin_Noise (Over_Grid, x, y));
+
+            x := x + dx;
+            I := I + 1;
 
          end loop;
+
+         y := y + dy;
+         J := J + 1;
+
       end loop;
 
    end Init_Temperature_Map_Z2;
@@ -243,22 +152,51 @@ package body Temperature_Map is
    ------------------------
 
    procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z2) is
+
+      Smooth_Temperature : Temperature_Type;
+
    begin
 
-      for I in Row_Z2'Range loop
-         for J in Col_Z2'Range loop
+      Random_Smooth_Shift.Reset (G_S);
+
+      for I in 2 .. Row_Z2'Last - 2 loop
+         for J in 2 .. Col_Z2'Last - 2 loop
 
             if Need_Smoothing (Temperature_Map, I, J) then
 
-               if Temperature_Map (I, J) = Warm then
-                  Temperature_Map (I, J) := Temperate;
+               declare
 
-               elsif Temperature_Map (I, J) = Freezing then
-                  Temperature_Map (I, J) := Cold;
-               end if;
+                  I_dx : constant Row_Z2 :=
+                    Row_Z2
+                      (Integer (I) +
+                       Integer (Random_Smooth_Shift.Random (G_S)));
+                  J_dy : constant Col_Z2 :=
+                    Col_Z2
+                      (Integer (J) +
+                       Integer (Random_Smooth_Shift.Random (G_S)));
+
+               begin
+
+                  if Temperature_Map (I, J) = Warm then
+
+                     Temperature_Map (I_dx, J_dy)     := Temperate;
+                     Temperature_Map (I_dx + 1, J_dy) := Temperate;
+                     Temperature_Map (I_dx, J_dy + 1) := Temperate;
+                     Temperature_Map (I_dx - 1, J_dy) := Temperate;
+                     Temperature_Map (I_dx, J_dy - 1) := Temperate;
+
+                  elsif Temperature_Map (I, J) = Freezing then
+
+                     Temperature_Map (I_dx, J_dy)     := Cold;
+                     Temperature_Map (I_dx + 1, J_dy) := Cold;
+                     Temperature_Map (I_dx, J_dy + 1) := Cold;
+                     Temperature_Map (I_dx - 1, J_dy) := Cold;
+                     Temperature_Map (I_dx, J_dy - 1) := Cold;
+                  end if;
+
+               end;
 
             end if;
-
          end loop;
       end loop;
 

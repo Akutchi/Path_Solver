@@ -53,8 +53,14 @@ private
    --  Here, we don't handle borders (it is simpler) as we have to check
    --  the neighbourhood around a point.
 
+   procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
+
    procedure Place_Topography (Source : String; Current_Zoom : Positive);
 
-   procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5);
+   procedure Remove_Borders
+     (Source : String; Destination : String; Current_Zoom : Positive;
+      Clip   : Positive);
+   --  As I do not care about the borders during the generation, there are
+   --  visible artefacts. This function clips the borders.
 
 end Generation;
