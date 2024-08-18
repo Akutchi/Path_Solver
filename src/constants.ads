@@ -32,9 +32,6 @@ package Constants is
    Z6 : constant Positive := 800;
    Z7 : constant Positive := 1_600;
 
-   Temperature_Base      : constant Positive := Z3;
-   Temperature_Quadruple : constant Positive := Z5;
-
    --  Generation
    Rocks       : constant Gdk_RGBA := (0.50, 0.50, 0.50, 1.0);
    Rocky_Hills : constant Gdk_RGBA := (0.30, 0.30, 0.30, 1.0);
@@ -43,23 +40,31 @@ package Constants is
    Deep_Ocean : constant Gdk_RGBA := (0.06, 0.40, 0.60, 1.0);
 
    --  Warm
-
    Desert       : constant Gdk_RGBA := (1.0, 0.77, 0.37, 1.0);
    Desert_Hills : constant Gdk_RGBA := (0.75, 0.44, 0.13, 1.0);
 
-   --  Temperate
+   -- Equatorial
+   Rainforest       : constant Gdk_RGBA := (0.36, 0.51, 0.09, 1.0);
+   Rainforest_Hills : constant Gdk_RGBA := (0.22, 0.27, 0.18, 1.0);
 
-   Plain       : constant Gdk_RGBA := (0.39, 0.59, 0.34, 1.0);
-   Plain_Hills : constant Gdk_RGBA := (0.13, 0.36, 0.07, 1.0);
+   --  Temperate
+   Plain       : constant Gdk_RGBA := (0.58, 0.72, 0.41, 1.0);
+   Plain_Hills : constant Gdk_RGBA := (0.15, 0.32, 0.07, 1.0);
 
    --  Cold
-
    Snowy       : constant Gdk_RGBA := (0.95, 0.95, 0.95, 1.0);
    Snowy_Hills : constant Gdk_RGBA := (0.70, 0.70, 0.70, 1.0);
 
    --  Freezing
-
    Ice       : constant Gdk_RGBA := (0.58, 1.0, 0.99, 1.0);
    Ice_Hills : constant Gdk_RGBA := (0.00, 0.63, 0.90, 1.0);
+
+   --  test gradient
+
+   Dark_Red  : constant Gdk_RGBA := (1.0, 0.0, 0.0, 1.0);
+   Red       : constant Gdk_RGBA := (1.0, 0.5, 0.5, 1.0);
+   White     : constant Gdk_RGBA := (1.0, 1.0, 1.0, 1.0);
+   Blue      : constant Gdk_RGBA := (0.50, 0.50, 1.0, 1.0);
+   Dark_Blue : constant Gdk_RGBA := (0.0, 0.0, 1.0, 1.0);
 
 end Constants;

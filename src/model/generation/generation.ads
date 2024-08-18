@@ -57,10 +57,4 @@ private
 
    procedure Place_Topography (Source : String; Current_Zoom : Positive);
 
-   procedure Remove_Borders
-     (Source : String; Destination : String; Current_Zoom : Positive;
-      Clip   : Positive);
-   --  As I do not care about the borders during the generation, there are
-   --  visible artefacts. This function clips the borders.
-
 end Generation;

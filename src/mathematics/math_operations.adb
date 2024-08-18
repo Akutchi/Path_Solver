@@ -214,8 +214,22 @@ package body Math_Operations is
 
    function Scale (x : Float) return Float is
    begin
-      return 1.5 * x + 2.5;
+      return 2.0 * x + 3.0;
    end Scale;
+
+   ---------------------
+   -- Calculate_Value --
+   ---------------------
+
+   function Calculate_Value
+     (Over_Grid : Perlin_Map; x, y : Float; xi : Perlin_Row; yi : Perlin_Col)
+      return Float
+   is
+      offset : constant Vector := Create_Offset (x, y, xi, yi);
+
+   begin
+      return dot (offset, Over_Grid (xi, yi).Gradient);
+   end Calculate_Value;
 
    ------------------
    -- Perlin_Noise --
@@ -224,8 +238,8 @@ package body Math_Operations is
    function Perlin_Noise (Over_Grid : Perlin_Map; x, y : Float) return Integer
    is
 
-      x0 : constant Perlin_Row := Perlin_Row (Integer (x));
-      y0 : constant Perlin_Col := Perlin_Col (Integer (y));
+      x0 : constant Perlin_Row := Perlin_Row (Integer (Float'Floor (x)));
+      y0 : constant Perlin_Col := Perlin_Col (Integer (Float'Floor (y)));
 
       x1 : constant Perlin_Row := x0 + 1;
       y1 : constant Perlin_Col := y0 + 1;
@@ -233,25 +247,20 @@ package body Math_Operations is
       sx : constant Float := x - Float (x0);
       sy : constant Float := y - Float (y0);
 
-      offset1 : constant Vector := Normalize (Create_Offset (x, y, x0, y0));
-      offset2 : constant Vector := Normalize (Create_Offset (x, y, x1, y0));
-      offset3 : constant Vector := Normalize (Create_Offset (x, y, x0, y1));
-      offset4 : constant Vector := Normalize (Create_Offset (x, y, x1, y1));
-
       a0, a1, a2, a3 : Float;
       mean1, mean2   : Float;
 
    begin
 
-      a0 := dot (Over_Grid (x0, y0).Gradient, offset1);
-      a1 := dot (Over_Grid (x1, y0).Gradient, offset2);
+      a0 := Calculate_Value (Over_Grid, x, y, x0, y0);
+      a1 := Calculate_Value (Over_Grid, x, y, x1, y0);
 
       mean1 := Interpolate (a0, a1, sx);
 
-      a2 := dot (Over_Grid (x0, y1).Gradient, offset3);
-      a3 := dot (Over_Grid (x1, y1).Gradient, offset4);
+      a2 := Calculate_Value (Over_Grid, x, y, x0, y1);
+      a3 := Calculate_Value (Over_Grid, x, y, x1, y1);
 
-      mean2 := Interpolate (a2, a3, sy);
+      mean2 := Interpolate (a2, a3, sx);
 
       return
         Integer (Float'Rounding (Scale ((Interpolate (mean1, mean2, sy)))));

@@ -290,15 +290,22 @@ package body Generation is
 
    procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5) is
 
-      Image : Handle;
+      Image                 : Handle;
+      Temperature_Map_Model : Handle;
+
+      Model_Name : constant String := "Temperature_Map.png";
 
    begin
 
+      Create_Image
+        (Image_Destination & Model_Name, Positive (Row_Z5'Last) + 1);
       Read (Image_Destination & Source, Image);
+      Read (Image_Destination & Model_Name, Temperature_Map_Model);
 
       declare
 
-         Data : Image_Data := Image.Value;
+         Data       : Image_Data := Image.Value;
+         Data_Model : Image_Data := Temperature_Map_Model.Value;
       begin
 
          for i_index in Row_Z5'Range loop
@@ -316,14 +323,14 @@ package body Generation is
 
                begin
 
-                  null;
-
                   if RGBA."=" (Color_Gdk, Rocks) then
 
                      case T is
 
                         when Warm =>
                            Put_Pixel (Data, I, J, Desert);
+                        when Equatorial =>
+                           Put_Pixel (Data, I, J, Rainforest);
                         when Temperate =>
                            Put_Pixel (Data, I, J, Plain);
                         when Cold =>
@@ -333,11 +340,26 @@ package body Generation is
                      end case;
                   end if;
 
+                  --  For test purposes
+                  case T is
+                     when Warm =>
+                        Put_Pixel (Data_Model, I, J, Dark_Red);
+                     when Equatorial =>
+                        Put_Pixel (Data_Model, I, J, Red);
+                     when Temperate =>
+                        Put_Pixel (Data_Model, I, J, White);
+                     when Cold =>
+                        Put_Pixel (Data_Model, I, J, Blue);
+                     when Freezing =>
+                        Put_Pixel (Data_Model, I, J, Dark_Blue);
+                  end case;
+
                end;
             end loop;
          end loop;
 
          Write_PNG (Image_Destination & Source, Data);
+         Write_PNG (Image_Destination & Model_Name, Data_Model);
       end;
 
    end Place_Biomes;
@@ -390,6 +412,9 @@ package body Generation is
                      if RGBA."=" (Biome_Map_Pixel, Desert) then
                         Put_Pixel (Data_Biome, I, J, Desert_Hills);
 
+                     elsif RGBA."=" (Biome_Map_Pixel, Rainforest) then
+                        Put_Pixel (Data_Biome, I, J, Rainforest_Hills);
+
                      elsif RGBA."=" (Biome_Map_Pixel, Plain) then
                         Put_Pixel (Data_Biome, I, J, Plain_Hills);
 
@@ -418,46 +443,6 @@ package body Generation is
       end;
 
    end Place_Topography;
-
-   procedure Remove_Borders
-     (Source : String; Destination : String; Current_Zoom : Positive;
-      Clip   : Positive)
-   is
-
-      Image_Src  : Handle;
-      Image_Dest : Handle;
-
-      N : constant Positive := Current_Zoom - Clip;
-   begin
-
-      Create_Image (Image_Destination & Destination, Current_Zoom);
-      Read (Image_Destination & Source, Image_Src);
-      Read (Image_Destination & Destination, Image_Dest);
-
-      declare
-
-         Data_Src  : constant Image_Data := Image_Src.Value;
-         Data_Dest : Image_Data          := Image_Dest.Value;
-      begin
-
-         for I in Clip .. N loop
-            for J in Clip .. N loop
-
-               declare
-                  Color : constant Gdk_RGBA :=
-                    Color_Info_To_GdkRGBA
-                      (Get_Pixel_Color (Data_Src, Pos (I), Pos (J)));
-               begin
-
-                  Put_Pixel (Data_Dest, Pos (I), Pos (J), Color);
-               end;
-            end loop;
-         end loop;
-
-         Write_PNG (Image_Destination & Destination, Data_Dest);
-      end;
-
-   end Remove_Borders;
 
    -----------------------
    -- Generate_Baseline --
@@ -615,18 +600,15 @@ package body Generation is
 
    procedure Generate_Biomes is
 
-      Temp_Map_Z2 : Temperature_Map_Z2;
       Temp_Map_Z5 : Temperature_Map_Z5;
 
-      x32      : constant Positive := Zoom_Levels (4);
-      x64      : constant Positive := Zoom_Levels (5);
-      Clipping : constant Positive := 8;
+      x32 : constant Positive := Zoom_Levels (4);
+      x64 : constant Positive := Zoom_Levels (5);
 
    begin
 
-      Init_Temperature_Map_Z2 (Temp_Map_Z2);
-      Smooth_Temperature (Temp_Map_Z2);
-      Scale_Map (From => Temp_Map_Z2, To => Temp_Map_Z5);
+      Init_Temperature_Map_Z5 (Temp_Map_Z5);
+      Smooth_Temperature (Temp_Map_Z5);
 
       Place_Biomes ("Layer_5.png", Temp_Map_Z5);
 
@@ -635,10 +617,6 @@ package body Generation is
          Destination => "Layer_6.png");
 
       Place_Topography (Source => "Layer_6.png", Current_Zoom => x64);
-
-      Remove_Borders
-        (Source       => "Layer_6.png", Destination => "Layer_7.png",
-         Current_Zoom => x64, Clip => Clipping);
 
    end Generate_Biomes;
 

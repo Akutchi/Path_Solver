@@ -3,7 +3,7 @@ with Ada.Numerics.Float_Random;
 
 package Temperature_Map is
 
-   type Temperature_Type is range 1 .. 4;
+   type Temperature_Type is range 1 .. 5;
    type Smooth_Shift is range -1 .. 1;
 
    package Random_Temperature is new Ada.Numerics.Discrete_Random
@@ -16,33 +16,29 @@ package Temperature_Map is
    G_S : Random_Smooth_Shift.Generator;
    Gf  : Ada.Numerics.Float_Random.Generator;
 
-   Warm      : constant Temperature_Type := 1;
-   Temperate : constant Temperature_Type := 2;
-   Cold      : constant Temperature_Type := 3;
-   Freezing  : constant Temperature_Type := 4;
+   Warm       : constant Temperature_Type := 1;
+   Equatorial : constant Temperature_Type := 2;
+   Temperate  : constant Temperature_Type := 3;
+   Cold       : constant Temperature_Type := 4;
+   Freezing   : constant Temperature_Type := 5;
 
    type Lign_Type is new Natural;
-
-   subtype Row_Z2 is Lign_Type range 0 .. 49;
-   subtype Col_Z2 is Lign_Type range 0 .. 49;
-
-   subtype Not_Border_Row is
-     Lign_Type range Row_Z2'First + 1 .. Row_Z2'Last - 1;
-
-   subtype Not_Border_Col is
-     Lign_Type range Col_Z2'First + 1 .. Col_Z2'Last - 1;
-
-   type Temperature_Map_Z2 is array (Row_Z2, Col_Z2) of Temperature_Type;
 
    subtype Row_Z5 is Lign_Type range 0 .. 399;
    subtype Col_Z5 is Lign_Type range 0 .. 399;
 
+   subtype Not_Border_Row is
+     Lign_Type range Row_Z5'First + 1 .. Row_Z5'Last - 1;
+
+   subtype Not_Border_Col is
+     Lign_Type range Col_Z5'First + 1 .. Col_Z5'Last - 1;
+
    type Temperature_Map_Z5 is array (Row_Z5, Col_Z5) of Temperature_Type;
 
-   procedure Init_Temperature_Map_Z2
-     (Temperature_Map : out Temperature_Map_Z2);
+   procedure Init_Temperature_Map_Z5
+     (Temperature_Map : out Temperature_Map_Z5);
 
-   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z2);
+   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z5);
    --  Two temperature need smoothing if they are two extreme for one another.
    --
    --  With the current cnfiguration, that means if :
@@ -53,19 +49,15 @@ package Temperature_Map is
    --  And it is possible to check for a neighbourhood by checking if the
    --  difference is greater than 4 in non Border case, 2 otherwise.
 
-   procedure Scale_Map
-     (From : Temperature_Map_Z2; To : out Temperature_Map_Z5);
-
-   procedure Print_Map_Z2 (T_M : Temperature_Map_Z2);
    procedure Print_Map_Z5 (T_M : Temperature_Map_Z5);
 
 private
 
    function Border_Case_Need_Smoothing
-     (T_M : Temperature_Map_Z2; I, J : Lign_Type; Ci, Cj : Lign_Type)
+     (T_M : Temperature_Map_Z5; I, J : Lign_Type; Ci, Cj : Lign_Type)
       return Boolean;
 
    function Need_Smoothing
-     (T_M : Temperature_Map_Z2; I, J : Lign_Type) return Boolean;
+     (T_M : Temperature_Map_Z5; I, J : Lign_Type) return Boolean;
 
 end Temperature_Map;

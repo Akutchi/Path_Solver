@@ -5,20 +5,20 @@ with Math_Operations; use Math_Operations;
 package body Temperature_Map is
 
    -----------------------------
-   -- Init_Temperature_Map_Z2 --
+   -- Init_Temperature_Map_Z5 --
    -----------------------------
 
-   procedure Init_Temperature_Map_Z2 (Temperature_Map : out Temperature_Map_Z2)
+   procedure Init_Temperature_Map_Z5 (Temperature_Map : out Temperature_Map_Z5)
    is
 
       Over_Grid : Perlin_Map;
 
-      dx, dy : constant Float := 0.1;
+      dx, dy : constant Float := 0.025;
 
       x, y : Float := 0.0;
 
-      I : Row_Z2 := 0;
-      J : Col_Z2 := 0;
+      I : Row_Z5 := 0;
+      J : Col_Z5 := 0;
 
    begin
 
@@ -27,13 +27,13 @@ package body Temperature_Map is
 
       loop
 
-         exit when J >= Col_Z2'Last - 1;
+         exit when J >= Col_Z5'Last - 1;
 
          x := 0.0;
          I := 0;
 
          loop
-            exit when I >= Row_Z2'Last - 1;
+            exit when I >= Row_Z5'Last - 1;
 
             Temperature_Map (I, J) :=
               Temperature_Type (Perlin_Noise (Over_Grid, x, y));
@@ -48,14 +48,14 @@ package body Temperature_Map is
 
       end loop;
 
-   end Init_Temperature_Map_Z2;
+   end Init_Temperature_Map_Z5;
 
    --------------------------------
    -- Border_Case_Need_Smoothing --
    --------------------------------
 
    function Border_Case_Need_Smoothing
-     (T_M : Temperature_Map_Z2; I, J : Lign_Type; Ci, Cj : Lign_Type)
+     (T_M : Temperature_Map_Z5; I, J : Lign_Type; Ci, Cj : Lign_Type)
       return Boolean
    is
       Two_Way    : Natural;
@@ -114,7 +114,7 @@ package body Temperature_Map is
    --------------------
 
    function Need_Smoothing
-     (T_M : Temperature_Map_Z2; I, J : Lign_Type) return Boolean
+     (T_M : Temperature_Map_Z5; I, J : Lign_Type) return Boolean
    is
 
       Balanced_4 : constant Positive := 4;
@@ -124,7 +124,7 @@ package body Temperature_Map is
 
       if Border_Case_Need_Smoothing (T_M, I, J, 0, 0)
         or else Border_Case_Need_Smoothing
-          (T_M, I, J, Row_Z2'Last, Col_Z2'Last)
+          (T_M, I, J, Row_Z5'Last, Col_Z5'Last)
       then
          return True;
       end if;
@@ -132,7 +132,7 @@ package body Temperature_Map is
       --  If the case has a 0 or is at an edge and does not need smoothing, it
       --  will still return false and continue leading to index check failed.
       if (I = 0 or else J = 0)
-        or else (I = Row_Z2'Last or else J = Col_Z2'Last)
+        or else (I = Row_Z5'Last or else J = Col_Z5'Last)
       then
          return False;
       end if;
@@ -151,7 +151,7 @@ package body Temperature_Map is
    -- Smooth_Temperature --
    ------------------------
 
-   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z2) is
+   procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z5) is
 
       Smooth_Temperature : Temperature_Type;
 
@@ -159,19 +159,19 @@ package body Temperature_Map is
 
       Random_Smooth_Shift.Reset (G_S);
 
-      for I in 2 .. Row_Z2'Last - 2 loop
-         for J in 2 .. Col_Z2'Last - 2 loop
+      for I in 2 .. Row_Z5'Last - 2 loop
+         for J in 2 .. Col_Z5'Last - 2 loop
 
             if Need_Smoothing (Temperature_Map, I, J) then
 
                declare
 
-                  I_dx : constant Row_Z2 :=
-                    Row_Z2
+                  I_dx : constant Row_Z5 :=
+                    Row_Z5
                       (Integer (I) +
                        Integer (Random_Smooth_Shift.Random (G_S)));
-                  J_dy : constant Col_Z2 :=
-                    Col_Z2
+                  J_dy : constant Col_Z5 :=
+                    Col_Z5
                       (Integer (J) +
                        Integer (Random_Smooth_Shift.Random (G_S)));
 
@@ -201,79 +201,6 @@ package body Temperature_Map is
       end loop;
 
    end Smooth_Temperature;
-
-   -------------------
-   -- Scale_Map --
-   -------------------
-
-   procedure Scale_Map (From : Temperature_Map_Z2; To : out Temperature_Map_Z5)
-   is
-      I, J : Lign_Type := 0; --  Base coords
-      K, L : Lign_Type := 0; --  Zoomed Coords
-
-      Scaling_Factor : constant Positive :=
-        Positive ((Row_Z5'Last + 1) / (Row_Z2'Last + 1));
-
-      Scaling_Factor_LT : constant Lign_Type := Lign_Type (Scaling_Factor);
-
-   begin
-
-      To := (others => (others => 1));
-      --  without it, invalid data when printing
-      --  must be missing some values without realizing it.
-
-      loop
-
-         exit when L > Col_Z5'Last - (Scaling_Factor_LT - 1);
-
-         I := 0;
-         K := 0;
-
-         loop
-
-            exit when K > Row_Z5'Last - (Scaling_Factor_LT - 1);
-
-            declare
-
-               Value : constant Temperature_Type := From (I, J);
-
-            begin
-
-               for M in 0 .. Scaling_Factor_LT - 1 loop
-                  for N in 0 .. Scaling_Factor_LT - 1 loop
-
-                     To (K + M, L + N) := Value;
-                  end loop;
-               end loop;
-
-            end;
-
-            I := I + 1;
-            K := K + Scaling_Factor_LT;
-
-         end loop;
-
-         J := J + 1;
-         L := L + Scaling_Factor_LT;
-
-      end loop;
-   end Scale_Map;
-
-   ------------------
-   -- Print_Map_Z2 --
-   ------------------
-
-   procedure Print_Map_Z2 (T_M : Temperature_Map_Z2) is
-   begin
-
-      for I in Row_Z2'Range loop
-         for J in Col_Z2'Range loop
-            Put (Temperature_Type'Image (T_M (I, J)) & " ");
-         end loop;
-         Put_Line ("");
-      end loop;
-
-   end Print_Map_Z2;
 
    ------------------
    -- Print_Map_Z5 --

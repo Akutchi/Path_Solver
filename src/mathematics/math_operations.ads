@@ -58,6 +58,10 @@ private
      (x, y : Float; xi : Perlin_Row; yi : Perlin_Col) return Vector;
 
    function Scale (x : Float) return Float;
-   --  [-1; 1] => [1; 4]
+   --  [-1; 1] => [1; 5]
+
+   function Calculate_Value
+     (Over_Grid : Perlin_Map; x, y : Float; xi : Perlin_Row; yi : Perlin_Col)
+      return Float;
 
 end Math_Operations;
