@@ -32,6 +32,17 @@ package body Math_Operations is
       return (u.X - v.X, u.Y - v.Y, u.Z - v.Z);
    end "-";
 
+   -----------
+   -- " = " --
+   -----------
+
+   function "=" (u : Vector; x : Float) return Boolean is
+
+      u_n : constant Float := norm (u);
+   begin
+      return u_n > x - epsilon and then u_n < x + epsilon;
+   end "=";
+
    ----------------
    -- Gradient_x --
    ----------------
@@ -208,14 +219,14 @@ package body Math_Operations is
       return o;
    end Create_Offset;
 
-   -----------
-   -- Scale --
-   -----------
+   --------------------------
+   -- Scale_To_Temperature --
+   --------------------------
 
-   function Scale (x : Float) return Float is
+   function Scale_To_Temperature (x : Float) return Float is
    begin
       return 2.0 * x + 3.0;
-   end Scale;
+   end Scale_To_Temperature;
 
    ---------------------
    -- Calculate_Value --
@@ -225,7 +236,7 @@ package body Math_Operations is
      (Over_Grid : Perlin_Map; x, y : Float; xi : Perlin_Row; yi : Perlin_Col)
       return Float
    is
-      offset : constant Vector := Create_Offset (x, y, xi, yi);
+      offset : constant Vector := Normalize (Create_Offset (x, y, xi, yi));
 
    begin
       return dot (offset, Over_Grid (xi, yi).Gradient);
@@ -263,9 +274,57 @@ package body Math_Operations is
       mean2 := Interpolate (a2, a3, sx);
 
       return
-        Integer (Float'Rounding (Scale ((Interpolate (mean1, mean2, sy)))));
+        Integer
+          (Float'Rounding
+             (Scale_To_Temperature ((Interpolate (mean1, mean2, sy)))));
 
    end Perlin_Noise;
+
+   function "*" (A, B : Interpolation_Map) return Float is
+
+      value : Float := 0.0;
+   begin
+
+      for I in Interpolation_Row'Range loop
+         for J in Interpolation_Col'Range loop
+            value := value + (A (I, J) * B (I, J));
+         end loop;
+      end loop;
+
+      return value;
+
+   end "*";
+
+   --------------------------
+   -- Scale_To_Interploate --
+   --------------------------
+
+   function Scale_To_Interploate (y : Float) return Float is
+   begin
+      return (y - 3.0) / 2.0;
+   end Scale_To_Interploate;
+
+   --------
+   -- Kx --
+   --------
+
+   function Kx (Local_Inverse : Interpolation_Map) return Float is
+   begin
+
+      return Local_Inverse * Mask_Gx;
+
+   end Kx;
+
+   --------
+   -- Ky --
+   --------
+
+   function Ky (Local_Inverse : Interpolation_Map) return Float is
+   begin
+
+      return Local_Inverse * Mask_Gy;
+
+   end Ky;
 
    ------------------
    -- Print_Vector --

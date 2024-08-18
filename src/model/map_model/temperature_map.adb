@@ -13,7 +13,7 @@ package body Temperature_Map is
 
       Over_Grid : Perlin_Map;
 
-      dx, dy : constant Float := 0.025;
+      dx, dy : constant Float := 0.01;
 
       x, y : Float := 0.0;
 
@@ -50,102 +50,81 @@ package body Temperature_Map is
 
    end Init_Temperature_Map_Z5;
 
-   --------------------------------
-   -- Border_Case_Need_Smoothing --
-   --------------------------------
+   -----------------------------
+   -- Calculate_Local_Inverse --
+   -----------------------------
 
-   function Border_Case_Need_Smoothing
-     (T_M : Temperature_Map_Z5; I, J : Lign_Type; Ci, Cj : Lign_Type)
-      return Boolean
-   is
-      Two_Way    : Natural;
-      Balanced_2 : constant Natural := 2;
-
-      function f (x : Lign_Type) return Lign_Type;
-      --  f(0) = 1, f(Width) = Width - 1, f(Height) = Height - 1
-      --  Allow to handle general border case substraction
-      --  (Cf Smooth_Temperature's doc)
-
-      function f (x : Lign_Type) return Lign_Type is
-      begin
-
-         return (if x = 0 then 1 else x - 1);
-
-      end f;
-
-   begin
-
-      if I = Ci and then J = Cj then
-
-         Two_Way :=
-           abs
-           (2 * Integer (T_M (Ci, Cj)) - Integer (T_M (I, f (Ci))) -
-            Integer (T_M (f (Cj), J)));
-         return Two_Way > Balanced_2;
-
-      end if;
-
-      if I = Ci and then J in Not_Border_Col then
-
-         Two_Way :=
-           abs
-           (2 * Integer (T_M (Ci, J)) - Integer (T_M (Ci, J + 1)) -
-            Integer (T_M (Ci, J - 1)));
-         return Two_Way > Balanced_2;
-
-      end if;
-
-      if I in Not_Border_Row and then J = Cj then
-
-         Two_Way :=
-           abs
-           (2 * Integer (T_M (I, Cj)) - Integer (T_M (I + 1, Cj)) -
-            Integer (T_M (I - 1, Cj)));
-         return Two_Way > Balanced_2;
-
-      end if;
-
-      return False;
-
-   end Border_Case_Need_Smoothing;
-
-   --------------------
-   -- Need_Smoothing --
-   --------------------
-
-   function Need_Smoothing
-     (T_M : Temperature_Map_Z5; I, J : Lign_Type) return Boolean
+   function Calculate_Local_Inverse
+     (Temperature_Map : Temperature_Map_Z5; I : Row_Z5; J : Col_Z5)
+      return Interpolation_Map
    is
 
-      Balanced_4 : constant Positive := 4;
-      Four_Way   : Natural;
-
+      Local_Inverse : Interpolation_Map;
    begin
 
-      if Border_Case_Need_Smoothing (T_M, I, J, 0, 0)
-        or else Border_Case_Need_Smoothing
-          (T_M, I, J, Row_Z5'Last, Col_Z5'Last)
-      then
-         return True;
+      for K in Interpolation_Row'Range loop
+         for L in Interpolation_Col'Range loop
+            Local_Inverse (K, L) :=
+              Scale_To_Interploate
+                (Float
+                   (Temperature_Map (I + Row_Z5 (K) - 1, J + Col_Z5 (L) - 1)));
+         end loop;
+      end loop;
+
+      return Local_Inverse;
+
+   end Calculate_Local_Inverse;
+
+   ----------------------
+   -- Replace_By_White --
+   ----------------------
+
+   procedure Apply_Correction
+     (Temp_Map : out Temperature_Map_Z5; I : Row_Z5; J : Col_Z5; G : Vector)
+   is
+   begin
+      if G.X > 0.0 and then G.Y < 0.0 then
+
+         Temp_Map (I + 1, J - 2) := Temperate;
+         Temp_Map (I + 1, J - 1) := Temperate;
+         Temp_Map (I + 2, J - 1) := Temperate;
+
+         Temp_Map (I - 1, J + 2) := Temperate;
+         Temp_Map (I - 1, J + 1) := Temperate;
+         Temp_Map (I - 2, J + 1) := Temperate;
+
+      elsif G.X < 0.0 and then G.Y > 0.0 then
+
+         Temp_Map (I - 1, J - 2) := Temperate;
+         Temp_Map (I - 1, J - 1) := Temperate;
+         Temp_Map (I - 2, J - 1) := Temperate;
+
+         Temp_Map (I + 2, J + 1) := Temperate;
+         Temp_Map (I + 1, J + 1) := Temperate;
+         Temp_Map (I + 1, J + 2) := Temperate;
+
+      elsif G.X = 0.0 and then G.Y /= 0.0 then
+
+         Temp_Map (I - 1, J - 1) := Temperate;
+         Temp_Map (I + 1, J - 1) := Temperate;
+         Temp_Map (I - 1, J + 1) := Temperate;
+         Temp_Map (I + 1, J + 1) := Temperate;
+
+         Temp_Map (I, J - 1) := Temperate;
+         Temp_Map (I, J + 1) := Temperate;
+
+      elsif G.X /= 0.0 and then G.Y = 0.0 then
+
+         Temp_Map (I - 1, J - 1) := Temperate;
+         Temp_Map (I + 1, J - 1) := Temperate;
+         Temp_Map (I - 1, J + 1) := Temperate;
+         Temp_Map (I + 1, J + 1) := Temperate;
+
+         Temp_Map (I, J - 1) := Temperate;
+         Temp_Map (I, J + 1) := Temperate;
+
       end if;
-
-      --  If the case has a 0 or is at an edge and does not need smoothing, it
-      --  will still return false and continue leading to index check failed.
-      if (I = 0 or else J = 0)
-        or else (I = Row_Z5'Last or else J = Col_Z5'Last)
-      then
-         return False;
-      end if;
-
-      Four_Way :=
-        abs
-        (4 * Integer (T_M (I, J)) - Integer (T_M (I + 1, J)) -
-         Integer (T_M (I - 1, J)) - Integer (T_M (I, J + 1)) -
-         Integer (T_M (I, J - 1)));
-
-      return Four_Way > Balanced_4;
-
-   end Need_Smoothing;
+   end Apply_Correction;
 
    ------------------------
    -- Smooth_Temperature --
@@ -157,46 +136,38 @@ package body Temperature_Map is
 
    begin
 
-      Random_Smooth_Shift.Reset (G_S);
+      for I in 1 .. Perlin_Row'Last - 1 loop
+         for J in 1 .. Perlin_Col'Last - 1 loop
 
-      for I in 2 .. Row_Z5'Last - 2 loop
-         for J in 2 .. Col_Z5'Last - 2 loop
+            declare
 
-            if Need_Smoothing (Temperature_Map, I, J) then
+               I_R : constant Row_Z5 := Row_Z5 (Positive (I) * Perlin_Shift);
+               J_R : constant Col_Z5 := Col_Z5 (Positive (J) * Perlin_Shift);
 
-               declare
+               Pixel : constant Temperature_Type := Temperature_Map (I_R, J_R);
 
-                  I_dx : constant Row_Z5 :=
-                    Row_Z5
-                      (Integer (I) +
-                       Integer (Random_Smooth_Shift.Random (G_S)));
-                  J_dy : constant Col_Z5 :=
-                    Col_Z5
-                      (Integer (J) +
-                       Integer (Random_Smooth_Shift.Random (G_S)));
+               Local_Inverse_Map : Interpolation_Map;
+               G                 : Vector;
+               Gp                : Vector;
 
-               begin
+            begin
 
-                  if Temperature_Map (I, J) = Warm then
+               if Pixel = Temperate then --  Is white in the model
 
-                     Temperature_Map (I_dx, J_dy)     := Temperate;
-                     Temperature_Map (I_dx + 1, J_dy) := Temperate;
-                     Temperature_Map (I_dx, J_dy + 1) := Temperate;
-                     Temperature_Map (I_dx - 1, J_dy) := Temperate;
-                     Temperature_Map (I_dx, J_dy - 1) := Temperate;
+                  Local_Inverse_Map :=
+                    Calculate_Local_Inverse (Temperature_Map, I_R, J_R);
+                  G                 :=
+                    Normalize
+                      ((Kx (Local_Inverse_Map), Ky (Local_Inverse_Map), 0.0));
 
-                  elsif Temperature_Map (I, J) = Freezing then
+                  if not (G = 0.0) then
 
-                     Temperature_Map (I_dx, J_dy)     := Cold;
-                     Temperature_Map (I_dx + 1, J_dy) := Cold;
-                     Temperature_Map (I_dx, J_dy + 1) := Cold;
-                     Temperature_Map (I_dx - 1, J_dy) := Cold;
-                     Temperature_Map (I_dx, J_dy - 1) := Cold;
+                     Gp := (-G.Y, G.X, G.Z);
+                     Apply_Correction (Temperature_Map, I_R, J_R, Gp);
+
                   end if;
-
-               end;
-
-            end if;
+               end if;
+            end;
          end loop;
       end loop;
 

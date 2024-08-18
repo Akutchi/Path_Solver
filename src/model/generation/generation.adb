@@ -608,7 +608,7 @@ package body Generation is
    begin
 
       Init_Temperature_Map_Z5 (Temp_Map_Z5);
-      Smooth_Temperature (Temp_Map_Z5);
+      --  Smooth_Temperature (Temp_Map_Z5);
 
       Place_Biomes ("Layer_5.png", Temp_Map_Z5);
 

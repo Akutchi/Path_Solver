@@ -16,12 +16,22 @@ package Math_Operations is
       Value    : Float;
    end record;
 
-   type Perlin_Row is range 0 .. 10;
-   type Perlin_Col is range 0 .. 10;
+   type Perlin_Row is range 0 .. 100;
+   type Perlin_Col is range 0 .. 100;
+
+   Perlin_Shift : Positive := 100;
 
    type Perlin_Map is array (Perlin_Row, Perlin_Col) of Perlin_Info;
 
    function "-" (u : Vector; v : Vector) return Vector;
+
+   subtype Precision is Float range 0.0 .. 1.0;
+
+   epsilon : constant Precision := 0.1;
+
+   function "=" (u : Vector; x : Float) return Boolean;
+   --  Has sense only with respect to the null vector
+   --  (here represented by its norm)
 
    function Data_To_Vector (Data : Image_Data; I, J : Integer) return Vector;
 
@@ -50,6 +60,33 @@ package Math_Operations is
    --  FR : https://fr.wikipedia.org/wiki/Bruit_de_Perlin
    --  EN : https://en.wikipedia.org/wiki/Perlin_noise
 
+   subtype Interpolate_Value is Float range -1.0 .. 1.0;
+
+   type Interpolation_Row is range 0 .. 4;
+   type Interpolation_Col is range 0 .. 4;
+
+   type Interpolation_Map is
+     array (Interpolation_Row, Interpolation_Col) of Interpolate_Value;
+
+   Mask_Gx : Interpolation_Map :=
+     ((1.0, 0.0, 0.0, 0.0, -1.0), (1.0, 0.0, 0.0, 0.0, -1.0),
+      (1.0, 0.0, 0.0, 0.0, -1.0), (1.0, 0.0, 0.0, 0.0, -1.0),
+      (1.0, 0.0, 0.0, 0.0, -1.0));
+
+   Mask_Gy : Interpolation_Map :=
+     ((1.0, 1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 0.0, 0.0),
+      (0.0, 0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0, 0.0),
+      (-1.0, -1.0, -1.0, -1.0, -1.0));
+
+   function "*" (A, B : Interpolation_Map) return Float;
+
+   function Scale_To_Interploate (y : Float) return Float;
+   --  [|1; 5|] => [-1; 1]
+
+   function Kx (Local_Inverse : Interpolation_Map) return Float;
+
+   function Ky (Local_Inverse : Interpolation_Map) return Float;
+
    procedure Print_Vector (u : Vector);
 
 private
@@ -57,8 +94,8 @@ private
    function Create_Offset
      (x, y : Float; xi : Perlin_Row; yi : Perlin_Col) return Vector;
 
-   function Scale (x : Float) return Float;
-   --  [-1; 1] => [1; 5]
+   function Scale_To_Temperature (x : Float) return Float;
+   --  [-1; 1] => [|1; 5|]
 
    function Calculate_Value
      (Over_Grid : Perlin_Map; x, y : Float; xi : Perlin_Row; yi : Perlin_Col)

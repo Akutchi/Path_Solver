@@ -62,7 +62,7 @@ package Constants is
    --  test gradient
 
    Dark_Red  : constant Gdk_RGBA := (1.0, 0.0, 0.0, 1.0);
-   Red       : constant Gdk_RGBA := (1.0, 0.5, 0.5, 1.0);
+   Red       : constant Gdk_RGBA := (1.0, 0.31, 0.31, 1.0);
    White     : constant Gdk_RGBA := (1.0, 1.0, 1.0, 1.0);
    Blue      : constant Gdk_RGBA := (0.50, 0.50, 1.0, 1.0);
    Dark_Blue : constant Gdk_RGBA := (0.0, 0.0, 1.0, 1.0);
