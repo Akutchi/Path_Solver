@@ -9,7 +9,7 @@
 
 with Ada.Numerics.Discrete_Random;
 
-package Generation.Random_Position is
+package Random_Position is
 
    type Pos is range 0 .. 1_600;
    subtype Pos_Z1 is Pos range 0 .. 24;
@@ -57,4 +57,4 @@ private
 
    function Draw (Zoom : Integer) return Point;
 
-end Generation.Random_Position;
+end Random_Position;

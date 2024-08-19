@@ -21,7 +21,7 @@ with Gdk.RGBA; use Gdk.RGBA;
 
 with Image_IO; use Image_IO;
 
-with Generation.Random_Position; use Generation.Random_Position;
+with Random_Position; use Random_Position;
 
 package RGBA is
 

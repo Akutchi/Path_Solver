@@ -1,6 +1,6 @@
 with Constants; use Constants;
 
-package body Generation.Random_Position is
+package body Random_Position is
 
    function Draw (Zoom : Integer) return Point is
    begin
@@ -70,4 +70,4 @@ package body Generation.Random_Position is
 
    end Draw_Random_Position;
 
-end Generation.Random_Position;
+end Random_Position;

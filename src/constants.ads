@@ -40,7 +40,7 @@ package Constants is
    --  Temperature Type                               --  Aparition percentage
 
    --  Warm
-   Desert       : constant Gdk_RGBA := (1.0, 0.77, 0.37, 1.0);       -- 50%
+   Desert       : constant Gdk_RGBA := (1.0, 0.77, 0.37, 1.0);       --  50%
    Desert_Hills : constant Gdk_RGBA := (0.75, 0.44, 0.13, 1.0);
 
    Savana : constant Gdk_RGBA := (0.40, 0.38, 0.16, 1.0);            --  33%

@@ -6,10 +6,9 @@ with Ada.Numerics.Float_Random;
 with Image_IO.Holders;    use Image_IO.Holders;
 with Image_IO.Operations; use Image_IO.Operations;
 
-with RGBA;                       use RGBA;
-with Math_Operations;            use Math_Operations;
-with Generation.Random_Biome;    use Generation.Random_Biome;
-with Generation.Random_Position; use Generation.Random_Position;
+with RGBA;                    use RGBA;
+with Math_Operations;         use Math_Operations;
+with Generation.Random_Biome; use Generation.Random_Biome;
 
 package body Generation is
 
@@ -573,17 +572,38 @@ package body Generation is
                      if RGBA."=" (Biome_Map_Pixel, Desert) then
                         Put_Pixel (Data_Biome, I, J, Desert_Hills);
 
+                     elsif RGBA."=" (Biome_Map_Pixel, Mesa) then
+                        Put_Pixel (Data_Biome, I, J, Mesa_Hills);
+
                      elsif RGBA."=" (Biome_Map_Pixel, Rainforest) then
                         Put_Pixel (Data_Biome, I, J, Rainforest_Hills);
+
+                     elsif RGBA."=" (Biome_Map_Pixel, Jungle) then
+                        Put_Pixel (Data_Biome, I, J, Jungle_Tree);
 
                      elsif RGBA."=" (Biome_Map_Pixel, Forest) then
                         Put_Pixel (Data_Biome, I, J, Forest_Trees);
 
+                     elsif RGBA."=" (Biome_Map_Pixel, Rocks) then
+                        Put_Pixel (Data_Biome, I, J, Rocky_Hills);
+
+                     elsif RGBA."=" (Biome_Map_Pixel, Mushroom) then
+                        Put_Pixel (Data_Biome, I, J, Mushroom_Tree);
+
+                     elsif RGBA."=" (Biome_Map_Pixel, SnowyTaiga) then
+                        Put_Pixel (Data_Biome, I, J, SnowyTaiga_Snow);
+
                      elsif RGBA."=" (Biome_Map_Pixel, Snowy) then
                         Put_Pixel (Data_Biome, I, J, Snowy_Hills);
 
+                     elsif RGBA."=" (Biome_Map_Pixel, SnowyBeach) then
+                        Put_Pixel (Data_Biome, I, J, SnowyBeach_Snow);
+
                      elsif RGBA."=" (Biome_Map_Pixel, Ice) then
                         Put_Pixel (Data_Biome, I, J, Ice_Hills);
+
+                     elsif RGBA."=" (Biome_Map_Pixel, SnowIce) then
+                        Put_Pixel (Data_Biome, I, J, SnowyIce_Hills);
 
                      end if;
                   end if;

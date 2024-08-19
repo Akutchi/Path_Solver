@@ -22,6 +22,7 @@ with Image_IO; use Image_IO;
 
 with Constants;       use Constants;
 with Temperature_Map; use Temperature_Map;
+with Random_Position; use Random_Position;
 
 package Generation is
 
@@ -79,7 +80,7 @@ private
    --  one biome each. Thus, choosing a random variation and putting it in a
    --  position (I, J) would result in too much mess.
    --
-   -- Thus, I opted for 1 Zone = 1 SubBiome.
+   --  Thus, I opted for 1 Zone = 1 SubBiome.
 
    function Choose_And_Diffuse
      (Data      : out Image_Data; Temp_Map : Temperature_Map_Z5;
