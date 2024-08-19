@@ -48,4 +48,7 @@ package Temperature_Map is
 
    procedure Print_Map_Z5 (T_M : Temperature_Map_Z5);
 
+   procedure Show_Temperature_Model
+     (Temp_Map : Temperature_Map_Z5; Current_Zoom : Positive);
+
 end Temperature_Map;

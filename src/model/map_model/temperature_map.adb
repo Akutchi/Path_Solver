@@ -1,6 +1,13 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
+with Image_IO;            use Image_IO;
+with Image_IO.Holders;    use Image_IO.Holders;
+with Image_IO.Operations; use Image_IO.Operations;
+
+with RGBA;            use RGBA;
 with Math_Operations; use Math_Operations;
+with Random_Position; use Random_Position;
+with Constants;       use Constants;
 
 package body Temperature_Map is
 
@@ -188,5 +195,57 @@ package body Temperature_Map is
       end loop;
 
    end Print_Map_Z5;
+
+   ----------------------------
+   -- Show_Temperature_Model --
+   ----------------------------
+
+   procedure Show_Temperature_Model
+     (Temp_Map : Temperature_Map_Z5; Current_Zoom : Positive)
+   is
+
+      Image : Handle;
+   begin
+
+      Create_Image (Image_Destination & Model_Name, Current_Zoom);
+      Read (Image_Destination & Model_Name, Image);
+
+      declare
+
+         Data_Model : Image_Data := Image.Value;
+
+      begin
+
+         for i_index in 0 .. Row_Z5'Last loop
+            for j_index in 0 .. Col_Z5'Last loop
+
+               declare
+                  T : constant Temperature_Type := Temp_Map (i_index, j_index);
+                  I : constant Pos              := Pos (i_index);
+                  J : constant Pos              := Pos (j_index);
+
+               begin
+
+                  case T is
+                     when Warm =>
+                        Put_Pixel (Data_Model, I, J, Dark_Red);
+                     when Equatorial =>
+                        Put_Pixel (Data_Model, I, J, Red);
+                     when Temperate =>
+                        Put_Pixel (Data_Model, I, J, White);
+                     when Cold =>
+                        Put_Pixel (Data_Model, I, J, Blue);
+                     when Freezing =>
+                        Put_Pixel (Data_Model, I, J, Dark_Blue);
+                  end case;
+
+               end;
+            end loop;
+         end loop;
+
+         Write_PNG (Image_Destination & Model_Name, Data_Model);
+      end;
+
+   end Show_Temperature_Model;
 
 end Temperature_Map;

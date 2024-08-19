@@ -1,4 +1,4 @@
-package body Generation.Random_Biome is
+package body Random_Biome is
 
    function Draw_Random_Base_Biome return Land_Or_Ocean is
    begin
@@ -7,4 +7,4 @@ package body Generation.Random_Biome is
       return Random (G);
    end Draw_Random_Base_Biome;
 
-end Generation.Random_Biome;
+end Random_Biome;
