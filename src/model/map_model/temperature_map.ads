@@ -3,6 +3,8 @@ with Ada.Numerics.Float_Random;
 
 package Temperature_Map is
 
+   Model_Name : constant String := "Temperature_Map.png";
+
    type Temperature_Type is range 1 .. 5;
 
    Warm       : constant Temperature_Type := 1;

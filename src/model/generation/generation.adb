@@ -1,3 +1,6 @@
+with Ada.Numerics;                      use Ada.Numerics;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+
 with Ada.Numerics.Float_Random;
 
 with Image_IO.Holders;    use Image_IO.Holders;
@@ -173,19 +176,17 @@ package body Generation is
                       norm (Gradient_y (Data, Integer (I), Integer (J))) > 0.0
                   then
 
-                     Put_Pixel (Data, I, J, Choose_Land_Or_Ocean);
+                     for k_index in -1 .. 1 loop
+                        for l_index in -1 .. 1 loop
 
-                     Put_Pixel (Data, I, J - 1, Choose_Land_Or_Ocean);
-                     Put_Pixel (Data, I, J + 1, Choose_Land_Or_Ocean);
-
-                     Put_Pixel (Data, I - 1, J, Choose_Land_Or_Ocean);
-                     Put_Pixel (Data, I + 1, J, Choose_Land_Or_Ocean);
-
-                     Put_Pixel (Data, I - 1, J - 1, Choose_Land_Or_Ocean);
-                     Put_Pixel (Data, I - 1, J + 1, Choose_Land_Or_Ocean);
-                     Put_Pixel (Data, I + 1, J - 1, Choose_Land_Or_Ocean);
-                     Put_Pixel (Data, I + 1, J + 1, Choose_Land_Or_Ocean);
-
+                           declare
+                              K : constant Pos := Pos (i_index + k_index);
+                              L : constant Pos := Pos (j_index + l_index);
+                           begin
+                              Put_Pixel (Data, K, L, Choose_Land_Or_Ocean);
+                           end;
+                        end loop;
+                     end loop;
                   end if;
                end;
             end loop;
@@ -288,78 +289,238 @@ package body Generation is
 
    end Remove_Too_Much;
 
-   procedure Place_Biomes (Source : String; Temp_Map : Temperature_Map_Z5) is
+   -------------------------
+   -- Not_Correct_Terrain --
+   -------------------------
 
-      Image                 : Handle;
-      Temperature_Map_Model : Handle;
+   function Not_Correct_Terrain (Color : Gdk_RGBA) return Boolean is
+   begin
+      return not (RGBA."=" (Color, Rocks));
 
-      Model_Name : constant String := "Temperature_Map.png";
+   end Not_Correct_Terrain;
+
+   -----------------------------
+   -- Not_Correct_Temperature --
+   -----------------------------
+
+   function Not_Correct_Temperature
+     (Temp_Map : Temperature_Map_Z5; I, J : Pos; T : Temperature_Type)
+      return Boolean
+   is
+   begin
+      return not (Temp_Map (Row_Z5 (I), Col_Z5 (J)) = T);
+
+   end Not_Correct_Temperature;
+
+   ---------------------
+   -- Is_Out_Of_Bound --
+   ---------------------
+
+   function Will_Be_Out_Of_Bound (I, J : Pos) return Boolean is
+
+      I_R : constant Natural := Natural (I);
+      J_R : constant Natural := Natural (J);
+
+      Is_Upper : constant Boolean :=
+        I_R = Natural (Row_Z5'First) or else J_R = Natural (Col_Z5'First);
+
+      Is_Lower : constant Boolean :=
+        I_R = Natural (Row_Z5'Last) or else J_R = Natural (Col_Z5'Last);
+   begin
+
+      return Is_Upper or else Is_Lower;
+
+   end Will_Be_Out_Of_Bound;
+
+   ------------------------
+   -- Is_Already_Visited --
+   ------------------------
+
+   function Is_Already_Visited
+     (Visit_Map : Any_Visit_Map; I, J : Pos) return Boolean
+   is
+   begin
+      return Visit_Map (Row_Visit (I), Col_Visit (J));
+   end Is_Already_Visited;
+
+   -------------
+   -- Diffuse --
+   -------------
+
+   function Diffuse
+     (Data      : out Image_Data; Temp_Map : Temperature_Map_Z5;
+      Visit_Map :     Any_Visit_Map; I, J : Pos; T : Temperature_Type;
+      Biome     :     Gdk_RGBA) return Natural
+   is
+   begin
+
+      if Will_Be_Out_Of_Bound (I, J) then
+         Put_Pixel (Data, I, J, Biome);
+         return 1;
+      end if;
+
+      declare
+         Color_Gdk : constant Gdk_RGBA :=
+           Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, I, J));
+
+      begin
+
+         if Not_Correct_Terrain (Color_Gdk)
+           or else Not_Correct_Temperature (Temp_Map, I, J, T)
+           or else Is_Already_Visited (Visit_Map, I, J)
+         then
+            return 0;
+         end if;
+
+         Visit_Map (Row_Visit (I), Col_Visit (J)) := True;
+         Put_Pixel (Data, I, J, Biome);
+
+         --  Because of the termination condition above, no overwritten
+         --  is possible
+         return
+           (Diffuse (Data, Temp_Map, Visit_Map, I + 1, J, T, Biome) +
+            Diffuse (Data, Temp_Map, Visit_Map, I - 1, J, T, Biome) +
+            Diffuse (Data, Temp_Map, Visit_Map, I, J + 1, T, Biome) +
+            Diffuse (Data, Temp_Map, Visit_Map, I, J - 1, T, Biome));
+
+      end;
+
+   end Diffuse;
+
+   ------------------------
+   -- Choose_And_Diffuse --
+   ------------------------
+
+   function Choose_And_Diffuse
+     (Data      : out Image_Data; Temp_Map : Temperature_Map_Z5;
+      Visit_Map :     Any_Visit_Map; I, J : Pos; T : Temperature_Type)
+      return Natural
+   is
+
+      Choice  : Ada.Numerics.Float_Random.Uniformly_Distributed;
+      Visited : Natural := 0;
+      Biome   : BiomeGroup;
 
    begin
 
-      Create_Image
-        (Image_Destination & Model_Name, Positive (Row_Z5'Last) + 1);
+      Ada.Numerics.Float_Random.Reset (Gb);
+      Choice := Ada.Numerics.Float_Random.Random (Gb);
+
+      case T is
+
+         when Warm =>
+            Biome := Warm_Group;
+
+         when Equatorial =>
+            Biome := Equatorial_Group;
+
+         when Temperate =>
+            Biome := Temperate_Group;
+
+         when Cold =>
+            Biome := Cold_Group;
+
+         when Freezing =>
+            Biome := Freezing_Group;
+      end case;
+
+      if Choice >= 0.0 and then Choice <= 0.17 then
+         Visited := Diffuse (Data, Temp_Map, Visit_Map, I, J, T, Biome (0));
+
+      elsif Choice > 0.17 and then Choice <= 0.5 then
+         Visited := Diffuse (Data, Temp_Map, Visit_Map, I, J, T, Biome (1));
+
+      else
+         Visited := Diffuse (Data, Temp_Map, Visit_Map, I, J, T, Biome (2));
+      end if;
+
+      return Visited;
+
+   end Choose_And_Diffuse;
+
+   ------------------------
+   -- Everything_Visited --
+   ------------------------
+
+   function Everything_Visited (Visit_Map : Any_Visit_Map) return Boolean is
+
+      Res : Boolean := True;
+   begin
+
+      for I in Row_Visit'Range loop
+         for J in Col_Visit'Range loop
+            Res := Res and then Visit_Map (I, J);
+
+            if not Res then
+               return False;
+            end if;
+         end loop;
+      end loop;
+
+      return True;
+
+   end Everything_Visited;
+
+   ------------------
+   -- Place_Biomes --
+   ------------------
+
+   procedure Place_Biomes
+     (Source : String; Temp_Map : Temperature_Map_Z5; Current_Zoom : Positive)
+   is
+
+      Image : Handle;
+
+      Visit_Map : constant Any_Visit_Map := new Is_Visited_Map;
+
+      N                : constant Float   := Float (Current_Zoom / 4);
+      Stochastic_Tries : constant Integer := Integer (N * Log (N, e));
+      Number_Visited   : Integer          := 0;
+
+   begin
+
       Read (Image_Destination & Source, Image);
-      Read (Image_Destination & Model_Name, Temperature_Map_Model);
 
       declare
-
-         Data       : Image_Data := Image.Value;
-         Data_Model : Image_Data := Temperature_Map_Model.Value;
+         Data : Image_Data := Image.Value;
       begin
 
-         for i_index in Row_Z5'Range loop
-            for j_index in Col_Z5'Range loop
+         Visit_Map.all := (others => (others => False));
 
-               declare
+         loop
 
-                  I : constant Pos := Pos (i_index);
-                  J : constant Pos := Pos (j_index);
+            --  When (almost) everything has been checked (I won't count
+            --  mini patch that have a quasi-null probability of been choosen)
+            exit when Everything_Visited (Visit_Map)
+              or else Number_Visited > Stochastic_Tries;
 
-                  Color_Gdk : constant Gdk_RGBA :=
-                    Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, I, J));
+            declare
 
-                  T : constant Temperature_Type := Temp_Map (i_index, j_index);
+               Coords : constant Point := Draw_Random_Position (Current_Zoom);
 
-               begin
+               Color_Gdk : constant Gdk_RGBA :=
+                 Color_Info_To_GdkRGBA
+                   (Get_Pixel_Color (Data, Coords.X, Coords.Y));
 
-                  if RGBA."=" (Color_Gdk, Rocks) then
+               Visited : constant Boolean :=
+                 Visit_Map (Row_Visit (Coords.X), Col_Visit (Coords.Y));
 
-                     case T is
+               T : constant Temperature_Type :=
+                 Temp_Map (Row_Z5 (Coords.X), Col_Z5 (Coords.Y));
 
-                        when Warm =>
-                           Put_Pixel (Data, I, J, Desert);
-                        when Equatorial =>
-                           Put_Pixel (Data, I, J, Rainforest);
-                        when Temperate =>
-                           Put_Pixel (Data, I, J, Plain);
-                        when Cold =>
-                           Put_Pixel (Data, I, J, Snowy);
-                        when Freezing =>
-                           Put_Pixel (Data, I, J, Ice);
-                     end case;
-                  end if;
+            begin
 
-                  --  For test purposes
-                  case T is
-                     when Warm =>
-                        Put_Pixel (Data_Model, I, J, Dark_Red);
-                     when Equatorial =>
-                        Put_Pixel (Data_Model, I, J, Red);
-                     when Temperate =>
-                        Put_Pixel (Data_Model, I, J, White);
-                     when Cold =>
-                        Put_Pixel (Data_Model, I, J, Blue);
-                     when Freezing =>
-                        Put_Pixel (Data_Model, I, J, Dark_Blue);
-                  end case;
+               if RGBA."=" (Color_Gdk, Rocks) and then not Visited then
 
-               end;
-            end loop;
+                  Number_Visited :=
+                    Number_Visited +
+                    Choose_And_Diffuse
+                      (Data, Temp_Map, Visit_Map, Coords.X, Coords.Y, T);
+               end if;
+            end;
          end loop;
 
          Write_PNG (Image_Destination & Source, Data);
-         Write_PNG (Image_Destination & Model_Name, Data_Model);
       end;
 
    end Place_Biomes;
@@ -415,8 +576,8 @@ package body Generation is
                      elsif RGBA."=" (Biome_Map_Pixel, Rainforest) then
                         Put_Pixel (Data_Biome, I, J, Rainforest_Hills);
 
-                     elsif RGBA."=" (Biome_Map_Pixel, Plain) then
-                        Put_Pixel (Data_Biome, I, J, Plain_Hills);
+                     elsif RGBA."=" (Biome_Map_Pixel, Forest) then
+                        Put_Pixel (Data_Biome, I, J, Forest_Trees);
 
                      elsif RGBA."=" (Biome_Map_Pixel, Snowy) then
                         Put_Pixel (Data_Biome, I, J, Snowy_Hills);
@@ -594,6 +755,58 @@ package body Generation is
 
    end Generate_Deep_Ocean_Model;
 
+   ----------------------------
+   -- Show_Temperature_Model --
+   ----------------------------
+
+   procedure Show_Temperature_Model
+     (Temp_Map : Temperature_Map_Z5; Current_Zoom : Positive)
+   is
+
+      Image : Handle;
+   begin
+
+      Create_Image (Image_Destination & Model_Name, Current_Zoom);
+      Read (Image_Destination & Model_Name, Image);
+
+      declare
+
+         Data_Model : Image_Data := Image.Value;
+
+      begin
+
+         for i_index in 0 .. Row_Z5'Last loop
+            for j_index in 0 .. Col_Z5'Last loop
+
+               declare
+                  T : constant Temperature_Type := Temp_Map (i_index, j_index);
+                  I : constant Pos              := Pos (i_index);
+                  J : constant Pos              := Pos (j_index);
+
+               begin
+
+                  case T is
+                     when Warm =>
+                        Put_Pixel (Data_Model, I, J, Dark_Red);
+                     when Equatorial =>
+                        Put_Pixel (Data_Model, I, J, Red);
+                     when Temperate =>
+                        Put_Pixel (Data_Model, I, J, White);
+                     when Cold =>
+                        Put_Pixel (Data_Model, I, J, Blue);
+                     when Freezing =>
+                        Put_Pixel (Data_Model, I, J, Dark_Blue);
+                  end case;
+
+               end;
+            end loop;
+         end loop;
+
+         Write_PNG (Image_Destination & Model_Name, Data_Model);
+      end;
+
+   end Show_Temperature_Model;
+
    ---------------------
    -- Generate_Biomes --
    ---------------------
@@ -608,9 +821,10 @@ package body Generation is
    begin
 
       Init_Temperature_Map_Z5 (Temp_Map_Z5);
+      Show_Temperature_Model (Temp_Map_Z5, x32);
       --  Smooth_Temperature (Temp_Map_Z5);
 
-      Place_Biomes ("Layer_5.png", Temp_Map_Z5);
+      Place_Biomes ("Layer_5.png", Temp_Map_Z5, x32);
 
       Zoom
         (Source      => "Layer_5.png", Multiply => x32,

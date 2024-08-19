@@ -32,10 +32,11 @@ The processus - the stack - is so named as it is a composition of many layers, e
 
 - Add_Islands : Add/Erode land to the current map with the help a horizontal and a vertical gradient.
 
-- Init_Temperature_Z2 : Initialize a temperature map (matrix with value from 1 to 4) which will be used to decide which biome will goes where.
+- Init_Temperature_Z5 : Initialize a temperature map (matrix with value from 1 to 5) which will be used to decide which biome will goes where.
 The map is generated using [perlin noise](https://en.wikipedia.org/wiki/Perlin_noise).
 
-- Smooth_Temperature : Smooth the temperature map for less abrupt variations.
+- Smooth_Temperature : Smooth the temperature map for less abrupt variations using kernel image gradients. Indeed, because of perlin noise caracteristic
+at grid point, there is a null gradient resulting in a singularity, which feels off when plotted at the biome layer.
 
 - Remove_Too_Much : This is a [dilation / erosion operator](https://en.wikipedia.org/wiki/Mathematical_morphology#Basic_operators) (depending on what you choose to erode) that I initialy created to remove small patch of ocean (think of a 1x1 ocean in land).
 
