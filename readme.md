@@ -30,17 +30,16 @@ The processus - the stack - is so named as it is a composition of many layers, e
 
 - Zoom : Create a new map double the size from the last.
 
-- Add_Islands : Add/Erode land to the current map with the help a horizontal and a vertical gradient.
+- Add_Islands : Add/Erode land to the current map with the help a horizontal and a vertical image gradient.
 
-- Init_Temperature_Z5 : Initialize a temperature map (matrix with value from 1 to 5) which will be used to decide which biome will goes where.
-The map is generated using [perlin noise](https://en.wikipedia.org/wiki/Perlin_noise).
+- Init_Temperature_Z5 : Initialize a temperature map where each point has a value from 1 to 5 which represent the zone general biome. The map is generated using [perlin noise](https://en.wikipedia.org/wiki/Perlin_noise).
 
-- Smooth_Temperature : Smooth the temperature map for less abrupt variations using kernel image gradients. Indeed, because of perlin noise caracteristic
+- Smooth_Temperature : Smooth the temperature map for less abrupt variations using kernel image gradients. Indeed, because of perlin noise's caracteristic
 at grid point, there is a null gradient resulting in a singularity, which feels off when plotted at the biome layer.
 
 - Remove_Too_Much : This is a [dilation / erosion operator](https://en.wikipedia.org/wiki/Mathematical_morphology#Basic_operators) (depending on what you choose to erode) that I initialy created to remove small patch of ocean (think of a 1x1 ocean in land).
 
-- Place_Biome : Use the temperature map from earlier [1] to decide what color will the rocks take.
+- Place_Biome : Use the temperature map from earlier [1] to decide what color will the rocks take. Because of the [number of subBiomes](./src/constants.ads (L.43 and following)), a random one-to-one surjection between biome and temperature number is impossible. As such, each subbiome has a probability of being choosen and is then placed into the zone by a [diffusion process (L.467 and following (sub-functions above))](./src/model/generation/generation.adb).
 
 - Place_Topography : Using the same general algorithm as the [Generate_Baseline function(L.462)](./src/model/generation/generation.adb), it creates a general map
 for the ocean and the hills that are then placed on top of the previous layer.
@@ -77,7 +76,7 @@ alternatively ```alr run``` to build and execute. The generated binary file is l
 
 There is currently to binaries associated with the project :
 - path_solver : the main program visualizing Dijkstra's algorithm
-- generation_main : the program that creates the procedural map. It is a test file for developpement. Its result can be seen on the last layer in [layer/templates](./layer_templates/).
+- generation_main : the program that creates the procedural map. It is a test file for developpement purposes. Its result can be seen on the last layer in [layer/templates](./layer_templates/).
 
 
 
