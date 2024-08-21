@@ -10,6 +10,8 @@ with RGBA;            use RGBA;
 with Math_Operations; use Math_Operations;
 with Random_Biome;    use Random_Biome;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body Generation is
 
    ------------
@@ -473,6 +475,7 @@ package body Generation is
       N                : constant Float   := Float (Current_Zoom / 4);
       Stochastic_Tries : constant Integer := Integer (N * Log (N, e));
       Number_Visited   : Integer          := 0;
+      Total_Tries      : Integer          := 0;
 
    begin
 
@@ -486,10 +489,27 @@ package body Generation is
 
          loop
 
-            --  When (almost) everything has been checked (I won't count
-            --  mini patch that have a quasi-null probability of been choosen)
+            --  Those three conditions are fail-safe mesures to avoid looping
+            --  forever (as our subprogram is loop on random positions).
+            --
+            --  They are :
+            --
+            --  1. If every pixels have been visited : quit.
+            --  This is the normal exit condition.
+            --
+            --  2. When almost everything has been visited : quit.
+            --  I don't care that mini-patch of 1x1~ that have a null
+            --  probability (about 1.56E-4 for a 80x80) of being
+            --  choosen are not.
+            --
+            --  3. If they are " too many " mini-patches : quit.
+            --  Some times the diffusion process runs forever because the
+            --  number of mini-patches are too much. (a.k.a Number_visited
+            --  will always be less than Stochastic_Tries)
+
             exit when Everything_Visited (Visit_Map)
-              or else Number_Visited > Stochastic_Tries;
+              or else Number_Visited > Stochastic_Tries
+              or else Total_Tries > 2 * Stochastic_Tries;
 
             declare
 
@@ -515,6 +535,8 @@ package body Generation is
                       (Data, Temp_Map, Visit_Map, Coords.X, Coords.Y, T);
                end if;
             end;
+
+            Total_Tries := Total_Tries + 1;
          end loop;
 
          Write_PNG (Image_Destination & Source, Data);
