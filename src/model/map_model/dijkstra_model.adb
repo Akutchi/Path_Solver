@@ -1,8 +1,5 @@
 with Constants; use Constants;
 
-with RGBA;        use RGBA;
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Dijkstra_Model is
 
    procedure Init_Costs (C_Hash : out Map) is
