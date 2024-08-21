@@ -46,6 +46,10 @@ package RGBA is
 
    procedure Create_Image (Name : String; Zoom : Positive);
 
+   function UInt8_To_Gdouble (c : Interfaces.Unsigned_8) return Gdouble;
+
+   function Gdouble_To_UInt8 (x : Gdouble) return Interfaces.Unsigned_8;
+
    function Color_Info_To_GdkRGBA (Color : Color_Info) return Gdk_RGBA;
    --  In the (R,G,B) float format
 
@@ -61,9 +65,5 @@ package RGBA is
 private
 
    function Almost_Equal (x, y : Gdouble; epsilon : Precision) return Boolean;
-
-   function UInt8_To_Gdouble (c : Interfaces.Unsigned_8) return Gdouble;
-
-   function Gdouble_To_UInt8 (x : Gdouble) return Interfaces.Unsigned_8;
 
 end RGBA;

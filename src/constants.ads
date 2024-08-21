@@ -23,6 +23,7 @@ package Constants is
    --  When changed here, also have to change values in
    --   - random_position.ads
    --   - temperature_map.ads
+   --   - cost_map.ads
 
    Z1 : constant Positive := 5;
    Z2 : constant Positive := 10;
@@ -35,7 +36,7 @@ package Constants is
    Ocean      : constant Gdk_RGBA := (0.06, 0.44, 0.87, 1.0);
    Deep_Ocean : constant Gdk_RGBA := (0.06, 0.40, 0.60, 1.0);
 
-   --  The following colors are taken from minecraft pictures
+   --  Don't change colors. Hash Map in Dijsktra_Model.adb depends on them.
 
    --  Temperature Type                               --  Aparition percentage
 
@@ -43,35 +44,35 @@ package Constants is
    Desert : constant Gdk_RGBA := (0.94, 0.88, 0.61, 1.0);            --  80%
 
    Mesa       : constant Gdk_RGBA := (0.92, 0.57, 0.31, 1.0);        --  20%
-   Mesa_Hills : constant Gdk_RGBA := (0.79, 0.44, 0.24, 1.0);
+   Mesa_Hills : constant Gdk_RGBA := (0.78, 0.43, 0.25, 1.0);
 
    --  Equatorial
    Rainforest       : constant Gdk_RGBA := (0.36, 0.51, 0.09, 1.0);
-   Rainforest_Hills : constant Gdk_RGBA := (0.29, 0.42, 0.07, 1.0);
+   Rainforest_Hills : constant Gdk_RGBA := (0.28, 0.43, 0.08, 1.0);
 
    Jungle      : constant Gdk_RGBA := (0.14, 0.38, 0.09, 1.0);
-   Jungle_Tree : constant Gdk_RGBA := (0.15, 0.33, 0.11, 1.0);
+   Jungle_Tree : constant Gdk_RGBA := (0.14, 0.34, 0.12, 1.0);
 
    --  Temperate
    Forest       : constant Gdk_RGBA := (0.30, 0.45, 0.22, 1.0);
-   Forest_Trees : constant Gdk_RGBA := (0.25, 0.40, 0.19, 1.0);
+   Forest_Trees : constant Gdk_RGBA := (0.24, 0.39, 0.18, 1.0);
 
-   Rocks       : constant Gdk_RGBA := (0.50, 0.50, 0.50, 1.0);
-   Rocky_Hills : constant Gdk_RGBA := (0.40, 0.40, 0.40, 1.0);
+   Rocks       : constant Gdk_RGBA := (0.48, 0.49, 0.47, 1.0);
+   Rocky_Hills : constant Gdk_RGBA := (0.41, 0.41, 0.40, 1.0);
 
    --  Cold
-   SnowyTaiga      : constant Gdk_RGBA := (0.28, 0.51, 0.28, 1.0);
-   SnowyTaiga_Snow : constant Gdk_RGBA := (1.0, 1.0, 1.0, 1.0);
+   SnowyTaiga      : constant Gdk_RGBA := (0.28, 0.51, 0.26, 1.0);
+   SnowyTaiga_Snow : constant Gdk_RGBA := (0.95, 0.97, 0.94, 1.0);
 
    Snowy       : constant Gdk_RGBA := (1.0, 1.0, 1.0, 1.0);
-   Snowy_Hills : constant Gdk_RGBA := (0.70, 0.70, 0.70, 1.0);
+   Snowy_Hills : constant Gdk_RGBA := (0.71, 0.71, 0.70, 1.0);
 
    --  Freezing
    Ice       : constant Gdk_RGBA := (0.60, 0.80, 1.0, 1.0);
    Ice_Hills : constant Gdk_RGBA := (0.46, 0.69, 0.92, 1.0);
 
-   SnowIce        : constant Gdk_RGBA := (1.0, 1.0, 1.0, 1.0);
-   SnowyIce_Hills : constant Gdk_RGBA := (0.60, 0.80, 1.0, 1.0);
+   SnowIce        : constant Gdk_RGBA := (0.98, 0.98, 0.98, 1.0);
+   SnowyIce_Hills : constant Gdk_RGBA := (0.57, 0.82, 0.98, 1.0);
 
    type BiomeGroup is array (Natural range 0 .. 1) of Gdk_RGBA;
 

@@ -21,7 +21,7 @@ package body RGBA is
 
    function "=" (Lossy_Color : Gdk_RGBA; To : Gdk_RGBA) return Boolean is
 
-      epsilon : constant Precision := 0.1;
+      epsilon : constant Precision := 0.01;
 
    begin
 
