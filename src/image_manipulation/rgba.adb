@@ -108,6 +108,7 @@ package body RGBA is
       Color_Gdk.Red   := UInt8_To_Gdouble (Color.Red);
       Color_Gdk.Green := UInt8_To_Gdouble (Color.Green);
       Color_Gdk.Blue  := UInt8_To_Gdouble (Color.Blue);
+      Color_Gdk.Alpha := 1.0;
 
       return Color_Gdk;
 

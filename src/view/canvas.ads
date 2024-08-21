@@ -7,6 +7,8 @@ with Constants; use Constants;
 
 package Canvas is
 
+   Map_Destination : constant String := "../layer_templates/Layer_6.png";
+
    type Image_Canvas_Record is new Interactive_Canvas_Record with record
 
       Backgroud : Cairo_Pattern := Null_Pattern;

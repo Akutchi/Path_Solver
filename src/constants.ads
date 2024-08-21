@@ -15,8 +15,8 @@ package Constants is
       Width  : Gint := 640;
       Height : Gint := 640;
 
-      Case_Width  : Gint := 128;
-      Case_Height : Gint := 128;
+      Case_Width  : Gint := 4;
+      Case_Height : Gint := 4;
 
    end record;
 

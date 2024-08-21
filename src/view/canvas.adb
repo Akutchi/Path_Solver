@@ -1,3 +1,12 @@
+with Image_IO;            use Image_IO;
+with Image_IO.Holders;    use Image_IO.Holders;
+with Image_IO.Operations; use Image_IO.Operations;
+
+with RGBA;            use RGBA;
+with Random_Position; use Random_Position;
+
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body Canvas is
 
    -------------
@@ -23,7 +32,7 @@ package body Canvas is
       Set_Source_RGBA
         (Cr, Item.Color.Red, Item.Color.Green, Item.Color.Blue,
          Item.Color.Alpha);
-      Cairo.Rectangle (Cr, 0.5, 0.5, Gdouble (Item.W), Gdouble (Item.H));
+      Cairo.Rectangle (Cr, 0.0, 0.0, Gdouble (Item.W), Gdouble (Item.H));
       Cairo.Fill (Cr);
 
    end Draw;
@@ -63,24 +72,41 @@ package body Canvas is
 
       Max_Item : constant Gint := Width_Nb * Height_Nb - 1;
 
+      Image : Handle;
+
    begin
 
-      for k in 0 .. Max_Item loop
+      Read (Map_Destination, Image);
 
-         declare
-            Item_k : constant Display_Item := new Display_Item_Record;
+      declare
 
-            I : constant Gint := k / Width_Nb;
-            J : constant Gint := k mod Height_Nb;
-            X : constant Gint := I * Can_Config.Case_Width;
-            Y : constant Gint := J * Can_Config.Case_Height;
+         Data : constant Image_Data := Image.Value;
 
-         begin
-            Initialize (Item_k, Canvas);
-            Put (Canvas, Item_k, X, Y);
-         end;
+      begin
 
-      end loop;
+         for k in 0 .. Max_Item loop
+
+            declare
+               Item_k : constant Display_Item := new Display_Item_Record;
+
+               I : constant Gint := k / Width_Nb;
+               J : constant Gint := k mod Height_Nb;
+               X : constant Gint := I * Can_Config.Case_Width;
+               Y : constant Gint := J * Can_Config.Case_Height;
+
+               Color : constant Gdk_RGBA :=
+                 Color_Info_To_GdkRGBA
+                   (Get_Pixel_Color (Data, Pos (J), Pos (I)));
+
+            begin
+
+               Initialize (Item_k, Canvas, Color);
+               Put (Canvas, Item_k, X, Y);
+            end;
+
+         end loop;
+
+      end;
 
    end Initial_Setup;
 
