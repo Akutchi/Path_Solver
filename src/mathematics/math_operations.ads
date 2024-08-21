@@ -16,10 +16,10 @@ package Math_Operations is
       Value    : Float;
    end record;
 
-   type Perlin_Row is range 0 .. 100;
-   type Perlin_Col is range 0 .. 100;
+   type Perlin_Row is range 0 .. 5;
+   type Perlin_Col is range 0 .. 5;
 
-   Perlin_Shift : Positive := 100;
+   Perlin_Shift : Positive := 16;
 
    type Perlin_Map is array (Perlin_Row, Perlin_Col) of Perlin_Info;
 

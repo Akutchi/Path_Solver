@@ -20,7 +20,7 @@ package body Temperature_Map is
 
       Over_Grid : Perlin_Map;
 
-      dx, dy : constant Float := 0.01;
+      dx, dy : constant Float := 0.062_5;
 
       x, y : Float := 0.0;
 
@@ -34,13 +34,10 @@ package body Temperature_Map is
 
       loop
 
-         exit when J >= Col_Z5'Last - 1;
-
          x := 0.0;
          I := 0;
 
          loop
-            exit when I >= Row_Z5'Last - 1;
 
             Temperature_Map (I, J) :=
               Temperature_Type (Perlin_Noise (Over_Grid, x, y));
@@ -48,10 +45,14 @@ package body Temperature_Map is
             x := x + dx;
             I := I + 1;
 
+            exit when I = Row_Z5'Last;
+
          end loop;
 
          y := y + dy;
          J := J + 1;
+
+         exit when J = Col_Z5'Last;
 
       end loop;
 

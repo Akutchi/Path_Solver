@@ -160,8 +160,8 @@ package body Generation is
 
       begin
 
-         for i_index in 1 .. N - 2 loop
-            for j_index in 1 .. N - 2 loop
+         for i_index in 2 .. N - 3 loop
+            for j_index in 2 .. N - 3 loop
 
                declare
 
@@ -423,14 +423,12 @@ package body Generation is
             Biome := Freezing_Group;
       end case;
 
-      if Choice >= 0.0 and then Choice <= 0.17 then
+      if Choice >= 0.0 and then Choice <= 0.8 then
          Visited := Diffuse (Data, Temp_Map, Visit_Map, I, J, T, Biome (0));
 
-      elsif Choice > 0.17 and then Choice <= 0.5 then
+      else
          Visited := Diffuse (Data, Temp_Map, Visit_Map, I, J, T, Biome (1));
 
-      else
-         Visited := Diffuse (Data, Temp_Map, Visit_Map, I, J, T, Biome (2));
       end if;
 
       return Visited;
@@ -569,10 +567,7 @@ package body Generation is
 
                   if RGBA."=" (Hill_Map_Pixel, Rocks) then
 
-                     if RGBA."=" (Biome_Map_Pixel, Desert) then
-                        Put_Pixel (Data_Biome, I, J, Desert_Hills);
-
-                     elsif RGBA."=" (Biome_Map_Pixel, Mesa) then
+                     if RGBA."=" (Biome_Map_Pixel, Mesa) then
                         Put_Pixel (Data_Biome, I, J, Mesa_Hills);
 
                      elsif RGBA."=" (Biome_Map_Pixel, Rainforest) then
@@ -587,17 +582,11 @@ package body Generation is
                      elsif RGBA."=" (Biome_Map_Pixel, Rocks) then
                         Put_Pixel (Data_Biome, I, J, Rocky_Hills);
 
-                     elsif RGBA."=" (Biome_Map_Pixel, Mushroom) then
-                        Put_Pixel (Data_Biome, I, J, Mushroom_Tree);
-
                      elsif RGBA."=" (Biome_Map_Pixel, SnowyTaiga) then
                         Put_Pixel (Data_Biome, I, J, SnowyTaiga_Snow);
 
                      elsif RGBA."=" (Biome_Map_Pixel, Snowy) then
                         Put_Pixel (Data_Biome, I, J, Snowy_Hills);
-
-                     elsif RGBA."=" (Biome_Map_Pixel, SnowyBeach) then
-                        Put_Pixel (Data_Biome, I, J, SnowyBeach_Snow);
 
                      elsif RGBA."=" (Biome_Map_Pixel, Ice) then
                         Put_Pixel (Data_Biome, I, J, Ice_Hills);
@@ -703,8 +692,6 @@ package body Generation is
          Destination => "Hills_3.png");
 
       Add_Islands (Source => "Hills_3.png", Current_Zoom => x8);
-      Add_Islands (Source => "Hills_3.png", Current_Zoom => x8);
-      Add_Islands (Source => "Hills_3.png", Current_Zoom => x8);
 
       Remove_Too_Much
         (Rocks, From => Ocean, Source => "Hills_3.png", Current_Zoom => x8,
@@ -714,6 +701,11 @@ package body Generation is
         (Source      => "Hills_3.png", Multiply => x8,
          Destination => "Hills_4.png");
 
+      Add_Islands (Source => "Hills_4.png", Current_Zoom => x16);
+
+      Remove_Too_Much
+        (Rocks, From => Ocean, Source => "Hills_4.png", Current_Zoom => x16,
+         Dilatation_Number => 6);
       Zoom
         (Source      => "Hills_4.png", Multiply => x16,
          Destination => "Hills_5.png");
@@ -790,7 +782,9 @@ package body Generation is
 
       Init_Temperature_Map_Z5 (Temp_Map_Z5);
       Show_Temperature_Model (Temp_Map_Z5, x32);
-      --  Smooth_Temperature (Temp_Map_Z5);
+      Smooth_Temperature (Temp_Map_Z5);
+      --  Still need some fixing. I guess the way I calculate the gradient is
+      --  not precise enough ?
 
       Place_Biomes ("Layer_5.png", Temp_Map_Z5, x32);
 

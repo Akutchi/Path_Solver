@@ -11,9 +11,9 @@ As it is my first time using gtkAda, I extensively relied on
 
 ### World Generation
 
-| ![The world](./doc/Layer_6_160.png)     ![The world](./doc/Layer_6_800.png) |
-|:--:|
-| *worlds generated with a minecraft-like algorithm* |
+ ![The world](./doc/Layer_6_160.png) ![The world](./doc/Layer_6_160_2.png)  \
+ ![The world](./doc/Layer_6_160_3.png) ![The world](./doc/Layer_6_160_4.png) \
+*160x160 worlds generated with a minecraft-like algorithm*
 
 #### Introduction
 

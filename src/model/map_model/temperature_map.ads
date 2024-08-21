@@ -21,8 +21,8 @@ package Temperature_Map is
 
    type Lign_Type is new Natural;
 
-   subtype Row_Z5 is Lign_Type range 0 .. 399;
-   subtype Col_Z5 is Lign_Type range 0 .. 399;
+   subtype Row_Z5 is Lign_Type range 0 .. 79;
+   subtype Col_Z5 is Lign_Type range 0 .. 79;
 
    subtype Not_Border_Row is
      Lign_Type range Row_Z5'First + 1 .. Row_Z5'Last - 1;
