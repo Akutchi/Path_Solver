@@ -3,8 +3,7 @@ with Image_IO.Operations; use Image_IO.Operations;
 
 with RGBA; use RGBA;
 
-with Ada.Text_IO;    use Ada.Text_IO;
-with Ada.Containers; use Ada.Containers;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Dijkstra_Model is
 
@@ -54,7 +53,8 @@ package body Dijkstra_Model is
 
       --  Flatten to nearest round float because there's a slight difference
       --  between constants.ads colors and colors got from Layer_6.png.
-      --  I flatten so that x + its neighbourhood get map to the same hash H
+      --
+      --  In essence, for all x in [0, 1], e << x, Flatten ([x-e; x+e]) = x
 
       C_Hash.Include (Flatten (Ocean), INFINITY);
       C_Hash.Include (Flatten (Deep_Ocean), INFINITY);
@@ -250,7 +250,6 @@ package body Dijkstra_Model is
         Flatten (Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, X, Y)));
 
    begin
-      Put_Line (Natural'Image (v) & " " & Hash_Type'Image (hash (C)));
       return Costs (C);
    end Cost;
 
@@ -289,6 +288,8 @@ package body Dijkstra_Model is
                alt   : Float            := 0.0;
 
             begin
+
+               Put_Line (Natural'Image (u_min));
 
                if u_min /= Target then
 

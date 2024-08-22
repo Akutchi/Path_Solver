@@ -114,19 +114,23 @@ package body RGBA is
 
    end Color_Info_To_GdkRGBA;
 
+   -------------
+   -- Flatten --
+   -------------
+
    function Flatten (c : Gdk_RGBA) return Gdk_RGBA is
 
-      function round (x : Gdouble) return Gdouble;
+      function trunc (x : Gdouble) return Gdouble;
 
-      function round (x : Gdouble) return Gdouble is
+      function trunc (x : Gdouble) return Gdouble is
       begin
 
-         return x - Gdouble ((Integer ((Float (x) * 100.0)) mod 10) * 0.01);
+         return Gdouble (0.1 * Float'Floor (10.0 * Float (x)));
 
-      end round;
+      end trunc;
 
    begin
-      return (round (c.Red), round (c.Green), round (c.Blue), c.Alpha);
+      return (trunc (c.Red), trunc (c.Green), trunc (c.Blue), c.Alpha);
    end Flatten;
 
    ---------------

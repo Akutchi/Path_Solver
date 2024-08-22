@@ -1,7 +1,5 @@
 with RGBA; use RGBA;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Math_Hash is
 
    function hash (c : Gdk_RGBA) return Hash_Type is

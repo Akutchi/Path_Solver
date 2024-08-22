@@ -60,7 +60,7 @@ package Constants is
    Forest_Trees : constant Gdk_RGBA := (0.24, 0.39, 0.18, 1.0);
 
    Rocks       : constant Gdk_RGBA := (0.50, 0.50, 0.50, 1.0);
-   Rocky_Hills : constant Gdk_RGBA := (0.41, 0.41, 0.40, 1.0);
+   Rocky_Hills : constant Gdk_RGBA := (0.40, 0.40, 0.40, 1.0);
 
    --  Cold
    SnowyTaiga      : constant Gdk_RGBA := (0.28, 0.51, 0.26, 1.0);
