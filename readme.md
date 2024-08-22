@@ -52,6 +52,53 @@ The current stack I'm using can be seen below :
 
 [1] Some details where omitted. In reality, the temperature map pass by a Scale_Map function to make the futur biomes bigger.
 
+### dijkstra's algorithm
+
+ ![Dijkstra](./doc/Dijkstra_1.png) ![Dijkstra](./doc/Dijkstra_2.png)  \
+ ![Dijkstra](./doc/Dijkstra_3.png) ![Dijkstra](./doc/Dijkstra_4.png) \
+*Dijkstra's algorithm visualization. Notice of the third map has no path has both ending points are on different islands.*
+
+#### Introduction
+
+The second part of this project was to implement dijkstra's algorithm and let it evolve in the previous kind of environment. The algorithm can be found [here](<https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm>) and I won't be going into details about it. However, what I will do is summarize the implementation.
+
+While I could have implemented a faster algorithm with the use of heaps (see the wikipedia article above), I prefered to opt for a simpler version, at least on a first basis. As I understood it better, it would be more convinent to implement, and what's more, if it were already fast enough (which it is), I would not need to go far and beyond my current efforts.
+
+#### Costs
+
+To implement the costs of each environment pixel, I decided to go for a hash map instead of a cost map. This has the advantage of being scalable. Indeed, the hash map is O(1) in memory because it stay the same whatever the size of the map is. Moreover, it is [O(log (N))](<https://learn.adacore.com/courses/intro-to-ada/chapters/standard_library_containers.html#hashed-maps>) in average in access time, which is probably faster than a 2D matrix.
+
+The hash function, however, had to be redefined. Ada provide a Standard hashing for Strings in Ada.Strings.Hash. However, I worked with the (R, G, B) format, which this hash is not adequate for.
+Thus, the hasing function I used was :
+```(Red) + (Green * 2^8) + (Blue * 2^16)```
+
+Finally, I could not hash raw (R, G, B) values. Indeed, GtkAda use floats in the range [0, 1] while Image_IO - which I used for the Image manipulation - use integer in the range [0, 255]. Thus, when converting from one to the other, there is loss of information which could result in a " key not in map error".
+Consequently, to compensate for this, I had to create a Flatten function that would truncate a float x to its first decimal. Thus, if some color was represented as (0.xy, 0.ab, 0.uv) in the GtkAda format and (0.xy', 0.ab', 0.uv') in the Image_IO format [1], then the Flatten function would cause both colors to be represented as (0.x, x.a, 0.u) which could then be hashed properly.
+
+The costs of each pixel's traversal was calculated with two variables in mind : The climate temperature and the speed. As an exemple, a forest is more difficult to traverse than a desert, but it has a lower temperature.
+Moreover, the temperature part of the cost must be quadratic : in both extremes, the cost is the same; whereas the speed is linear. The more difficult the terrain, the slower the traversal is. Finally, a hill terrain slightly makes the cost go up whatever the original terrain. As such, for a temperature and speed (x, y), the associated cost is :
+
+``` C(x, y) = aT(x) + bS(y)```\
+with\
+```T(x) = x^2 + 1, S(x) = x, a = 1, b = 1/2```
+
+#### Prev, Queue and all dijkstra's containers
+
+Dijkstra's algorithm use a few lists to store vertices and costs. For both the Cost, the previous and the queue containers, I opted for a NxN list with each element representing a pixel on the map. This way, I could, for :
+- The cost : Place INFINITY on cases where there was (Deep) Ocean
+- The Previous : Place -1 on pixels not visited
+- The Queue : Place 1 for pixel on the queue, 0 on those not in it.
+
+The queue, being a bit special, is to be more discussed about.
+The queue is a NxN+1 list of Integers. It has the value 1 if a pixel is in the queue, 0 if not. The last element of the queue is the number of elements in the queue.
+
+For the queue, I decided for an array instead of a vector because it allowed for a faster neighbours search. If I had used a vector, I would have had a O(M.N) in time (N is the queue size, M the size until we reach a neighbour, M <= N) while I could here have a O(1).
+However, this has the downside of having a O(N) [2] for the search of the minimum, instead of a O(1) for the vector implementation.
+
+
+[1] After converting UInt8 to Float.
+[2] With my current implementation.
+
 ## Configuration
 
 ### Introduction
