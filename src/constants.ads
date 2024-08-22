@@ -3,6 +3,8 @@ with Gdk.RGBA; use Gdk.RGBA;
 
 package Constants is
 
+   Map_Destination : constant String := "../layer_templates/Layer_6.png";
+
    type Window_Configuration is record
 
       Width  : Gint := 680;
@@ -57,7 +59,7 @@ package Constants is
    Forest       : constant Gdk_RGBA := (0.30, 0.45, 0.22, 1.0);
    Forest_Trees : constant Gdk_RGBA := (0.24, 0.39, 0.18, 1.0);
 
-   Rocks       : constant Gdk_RGBA := (0.48, 0.49, 0.47, 1.0);
+   Rocks       : constant Gdk_RGBA := (0.50, 0.50, 0.50, 1.0);
    Rocky_Hills : constant Gdk_RGBA := (0.41, 0.41, 0.40, 1.0);
 
    --  Cold

@@ -4,8 +4,7 @@ with Image_IO.Operations; use Image_IO.Operations;
 
 with RGBA;            use RGBA;
 with Random_Position; use Random_Position;
-
-with Ada.Text_IO; use Ada.Text_IO;
+with Constants;       use Constants;
 
 package body Canvas is
 

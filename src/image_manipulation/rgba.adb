@@ -114,6 +114,21 @@ package body RGBA is
 
    end Color_Info_To_GdkRGBA;
 
+   function Flatten (c : Gdk_RGBA) return Gdk_RGBA is
+
+      function round (x : Gdouble) return Gdouble;
+
+      function round (x : Gdouble) return Gdouble is
+      begin
+
+         return x - Gdouble ((Integer ((Float (x) * 100.0)) mod 10) * 0.01);
+
+      end round;
+
+   begin
+      return (round (c.Red), round (c.Green), round (c.Blue), c.Alpha);
+   end Flatten;
+
    ---------------
    -- Put_Pixel --
    ---------------

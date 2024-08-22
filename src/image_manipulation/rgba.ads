@@ -56,6 +56,9 @@ package RGBA is
    function GdkRGBA_To_Color_Info (Color : Gdk_RGBA) return Color_Info;
    --  In the (R,G,B) integer format
 
+   function Flatten (c : Gdk_RGBA) return Gdk_RGBA;
+   --  Round color components to nearest round float
+
    procedure Put_Pixel
      (Data : in out Image_Data; X, Y : Pos; Color : Gdk_RGBA);
 
