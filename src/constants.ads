@@ -5,6 +5,9 @@ package Constants is
 
    Map_Destination : constant String := "../layer_templates/Layer_6.png";
 
+   Final_Destination : constant String :=
+     "../layer_templates/Layer_6_Dijkstra.png";
+
    type Window_Configuration is record
 
       Width  : Gint := 680;
@@ -84,7 +87,9 @@ package Constants is
    Cold_Group       : BiomeGroup := (SnowyTaiga, Snowy);
    Freezing_Group   : BiomeGroup := (Ice, SnowIce);
 
-   --  test gradient
+   --  test gradient + Dijkstra end points
+
+   Black : constant Gdk_RGBA := (0.0, 0.0, 0.0, 1.0);
 
    Dark_Red  : constant Gdk_RGBA := (1.0, 0.0, 0.0, 1.0);
    Red       : constant Gdk_RGBA := (1.0, 0.31, 0.31, 1.0);

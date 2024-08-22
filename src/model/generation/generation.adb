@@ -10,8 +10,6 @@ with RGBA;            use RGBA;
 with Math_Operations; use Math_Operations;
 with Random_Biome;    use Random_Biome;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Generation is
 
    ------------

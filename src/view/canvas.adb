@@ -4,7 +4,6 @@ with Image_IO.Operations; use Image_IO.Operations;
 
 with RGBA;            use RGBA;
 with Random_Position; use Random_Position;
-with Constants;       use Constants;
 
 package body Canvas is
 
@@ -75,7 +74,7 @@ package body Canvas is
 
    begin
 
-      Read (Map_Destination, Image);
+      Read (Final_Destination, Image);
 
       declare
 

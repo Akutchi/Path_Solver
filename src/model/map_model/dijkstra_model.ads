@@ -18,8 +18,12 @@ package Dijkstra_Model is
    package Neighbours is new Ada.Containers.Indefinite_Vectors
      (Index_Type => Positive, Element_Type => Integer);
 
+   package Shortest_Path is new Ada.Containers.Indefinite_Vectors
+     (Index_Type => Positive, Element_Type => Point);
+
    use Cost_Hash;
    use Neighbours;
+   use Shortest_Path;
 
    INFINITY : Float   := 1_000.0;
    Image_Z6 : Natural := Z6 - 1;
@@ -37,7 +41,16 @@ package Dijkstra_Model is
    end record;
 
    procedure Init_Dijsktra (C_Map : out Cost_Map);
-   function Calculate_Shortest_Path (D_Map : Cost_Map) return Prev_Array;
+
+   function Calculate_Shortest_Path
+     (Dijkstra_Info : Cost_Map) return Prev_Array;
+
+   function Salmon_Swim
+     (Prev : Prev_Array; Dijkstra_Info : Cost_Map) return Shortest_Path.Vector;
+   --  Because, yk, salmon swim up rivers currents...
+
+   procedure Draw_On_Map
+     (Path : Shortest_Path.Vector; Dijkstra_Info : Cost_Map);
 
 private
 
@@ -46,6 +59,6 @@ private
    procedure Init_Queue (Data : Image_Data; Q : out Queue);
 
    function Get_Min (Q : out Queue; Dist : Dist_Array) return Natural;
-   function Get_Neighbours (Q : Queue; u : Natural) return Vector;
+   function Get_Neighbours (Q : Queue; u : Natural) return Neighbours.Vector;
 
 end Dijkstra_Model;

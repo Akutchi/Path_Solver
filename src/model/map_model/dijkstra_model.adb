@@ -3,8 +3,6 @@ with Image_IO.Operations; use Image_IO.Operations;
 
 with RGBA; use RGBA;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Dijkstra_Model is
 
    ----------------
@@ -196,7 +194,9 @@ package body Dijkstra_Model is
          end if;
       end loop;
 
-      Q (k) := 0;
+      Q (k)      := 0;
+      Q (Q'Last) := Q (Q'Last) - 1;
+
       return k;
 
    end Get_Min;
@@ -205,9 +205,9 @@ package body Dijkstra_Model is
    -- Get_Neighbours --
    --------------------
 
-   function Get_Neighbours (Q : Queue; u : Natural) return Vector is
+   function Get_Neighbours (Q : Queue; u : Natural) return Neighbours.Vector is
 
-      N     : Vector;
+      N     : Neighbours.Vector;
       First : constant Integer := Integer (Q'First + 1);
       Last  : constant Integer := Integer (Q'Last - 1);
 
@@ -257,11 +257,16 @@ package body Dijkstra_Model is
    -- Calculate_Shortest_Path --
    -----------------------------
 
-   function Calculate_Shortest_Path (D_Map : Cost_Map) return Prev_Array is
+   function Calculate_Shortest_Path
+     (Dijkstra_Info : Cost_Map) return Prev_Array
+   is
 
-      Source : constant Point   := D_Map.Start_Point;
+      Source : constant Natural :=
+        Natural (Dijkstra_Info.Start_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.Start_Point.Y);
       Target : constant Natural :=
-        Natural (D_Map.End_Point.X) * Image_Z6 + Natural (D_Map.End_Point.Y);
+        Natural (Dijkstra_Info.End_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.End_Point.Y);
 
       Image : Handle;
 
@@ -275,41 +280,130 @@ package body Dijkstra_Model is
 
       declare
 
-         Data : constant Image_Data := Image.Value;
+         Data  : constant Image_Data := Image.Value;
+         u_min : Natural             := 0;
+         alt   : Float               := 0.0;
 
       begin
          Init_Queue (Data, Q);
-         Dist (Natural (Source.X) * Image_Z6 + Natural (Source.Y)) := 0.0;
+         Dist (Source) := 0.0;
 
-         while Q (Q'Last) > 0 loop
+         while u_min /= Target and then Q (Q'Last) > 0 loop
 
-            declare
-               u_min : constant Natural := Get_Min (Q, Dist);
-               alt   : Float            := 0.0;
+            u_min := Get_Min (Q, Dist);
 
-            begin
+            for v of Get_Neighbours (Q, u_min) loop
 
-               Put_Line (Natural'Image (u_min));
+               alt := Dist (u_min) + Cost (Data, Dijkstra_Info.Costs, v);
+               if alt < Dist (v) then
 
-               if u_min /= Target then
+                  Dist (v) := alt;
+                  Prev (v) := u_min;
 
-                  for v of Get_Neighbours (Q, u_min) loop
-
-                     alt := Dist (u_min) + Cost (Data, D_Map.Costs, v);
-                     if alt < Dist (v) then
-
-                        Dist (v) := alt;
-                        Prev (v) := u_min;
-
-                     end if;
-                  end loop;
                end if;
-            end;
+            end loop;
          end loop;
       end;
 
       return Prev;
 
    end Calculate_Shortest_Path;
+
+   -----------------
+   -- Salmon_Swim --
+   -----------------
+
+   function Salmon_Swim
+     (Prev : Prev_Array; Dijkstra_Info : Cost_Map) return Shortest_Path.Vector
+   is
+
+      Path : Shortest_Path.Vector;
+
+      Source : constant Natural :=
+        Natural (Dijkstra_Info.Start_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.Start_Point.Y);
+      Target : constant Natural :=
+        Natural (Dijkstra_Info.End_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.End_Point.Y);
+
+      u : Natural := Target;
+
+   begin
+
+      if Prev (u) /= -1 or else Prev (u) = Source then
+
+         while Prev (u) /= -1 loop
+            Append (Path, (Pos (u / Image_Z6), Pos (u mod Image_Z6)));
+            u := Prev (u);
+
+         end loop;
+      end if;
+
+      return Path;
+
+   end Salmon_Swim;
+
+   -----------------
+   -- Draw_On_Map --
+   -----------------
+
+   procedure Draw_On_Map
+     (Path : Shortest_Path.Vector; Dijkstra_Info : Cost_Map)
+   is
+
+      Image_Src  : Handle;
+      Image_Dest : Handle;
+   begin
+
+      Create_Image (Final_Destination, Z6);
+
+      Read (Map_Destination, Image_Src);
+      Read (Final_Destination, Image_Dest);
+
+      declare
+         Data_Src  : constant Image_Data := Image_Src.Value;
+         Data_Dest : Image_Data          := Image_Dest.Value;
+         Color     : Gdk_RGBA;
+
+         Source : constant Point := Dijkstra_Info.Start_Point;
+         Target : constant Point := Dijkstra_Info.End_Point;
+
+      begin
+
+         for I in 0 .. Z6 - 1 loop
+            for J in 0 .. Z6 - 1 loop
+
+               declare
+                  Color : constant Gdk_RGBA :=
+                    Color_Info_To_GdkRGBA
+                      (Get_Pixel_Color (Data_Src, Pos (I), Pos (J)));
+               begin
+                  Put_Pixel (Data_Dest, Pos (I), Pos (J), Color);
+               end;
+            end loop;
+         end loop;
+
+         if not Is_Empty (Path) then
+
+            for p of Path loop
+
+               if p = First_Element (Path) or else p = Last_Element (Path) then
+                  Color := Black;
+               else
+                  Color := Dark_Red;
+               end if;
+
+               Put_Pixel (Data_Dest, p.X, p.Y, Color);
+            end loop;
+
+         else
+            Put_Pixel (Data_Dest, Source.X, Source.Y, Black);
+            Put_Pixel (Data_Dest, Target.X, Target.Y, Black);
+         end if;
+
+         Write_PNG (Final_Destination, Data_Dest);
+      end;
+
+   end Draw_On_Map;
 
 end Dijkstra_Model;

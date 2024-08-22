@@ -11,6 +11,7 @@ procedure Path_Solver is
    Main_Canvas   : Image_Canvas;
    Dijkstra_Info : Cost_Map;
    Prev          : Prev_Array;
+   Path          : Shortest_Path.Vector;
 
 begin
 
@@ -23,6 +24,8 @@ begin
    Init;
 
    Prev := Calculate_Shortest_Path (Dijkstra_Info);
+   Path := Salmon_Swim (Prev, Dijkstra_Info);
+   Draw_On_Map (Path, Dijkstra_Info);
 
    Main_Windows.Gtk_New (Win);
    Canvas.Gtk_New (Main_Canvas);
