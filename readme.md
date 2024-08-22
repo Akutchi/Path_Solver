@@ -4,7 +4,7 @@
 
 This project is a visualization of
 [dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
-with an ada implementation, [gtkada](https://github.com/AdaCore/gtkada) for the GUI; and using a procedural world generation for the map.
+with an ada implementation ([gtkada](https://github.com/AdaCore/gtkada) for the GUI) and using a procedural world generation for the map.
 
 As it is my first time using gtkAda, I extensively relied on
 [the examples](https://github.com/AdaCore/gtkada/tree/master/testgtk) provided.
@@ -26,22 +26,21 @@ To generate our map, I use what I came to call the " Zooming principle ". I star
 
 The processus - the stack - is so named as it is a composition of many layers, each one having a specific instruction :
 
-- Island : the first layer in the stack : it creates a basic map with only land and ocean in a 3 to 10 ratio.
+- Island : the first layer in the stack. It creates a basic map with only rocks and ocean in a 3 to 10 ratio.
 
 - Zoom : Create a new map double the size from the last.
 
 - Add_Islands : Add/Erode land to the current map with the help a horizontal and a vertical image gradient.
 
-- Init_Temperature_Z5 : Initialize a temperature map where each point has a value from 1 to 5 which represent the zone general biome. The map is generated using [perlin noise](https://en.wikipedia.org/wiki/Perlin_noise).
+- Init_Temperature_Z5 : Initialize a temperature map where each point has a value from 1 to 5 which represent the zone general biome. The map is generated using [perlin noise](https://en.wikipedia.org/wiki/Perlin_noise) which allows for a somewhat continuous transition and a "temperature feel" to the map [1].
 
-- Smooth_Temperature : Smooth the temperature map for less abrupt variations using kernel image gradients. Indeed, because of perlin noise's caracteristic
-at grid point, there is a null gradient resulting in a singularity, which feels off when plotted at the biome layer.
+- Smooth_Temperature : Smooth the temperature map for less abrupt variations using kernel image gradients. Indeed, because of perlin noise's caracteristic at grid point, there is a null gradient resulting in a singularity, which feels off when plotted at the biome layer.
 
 - Remove_Too_Much : This is a [dilation / erosion operator](https://en.wikipedia.org/wiki/Mathematical_morphology#Basic_operators) (depending on what you choose to erode) that I initialy created to remove small patch of ocean (think of a 1x1 ocean in land).
 
-- Place_Biome : Use the temperature map from earlier [1] to decide what color will the rocks take. Because of the [number of subBiomes](./src/constants.ads (L.43 and following)), a random one-to-one surjection between biome and temperature number is impossible. As such, each subbiome has a probability of being choosen and is then placed into the zone by a [diffusion process (L.467 and following (sub-functions above))](./src/model/generation/generation.adb).
+- Place_Biome : Use the temperature map from earlier [2] to decide what color will the rocks take. Because of the [number of sub-biomes](./src/constants.ads (L.43 and following)), a one-to-one bijection between biome and temperature number is impossible. As such, each sub-biome has a probability of being choosen and is then placed into the zone by a [diffusion process (L.467 and following (sub-functions above))](./src/model/generation/generation.adb).
 
-- Place_Topography : Using the same general algorithm as the [Generate_Baseline function(L.462)](./src/model/generation/generation.adb), it creates a general map
+- Place_Topography : Using the same general algorithm as the [Generate_Baseline function (L.462)](./src/model/generation/generation.adb), it creates a general map
 for the ocean and the hills that are then placed on top of the previous layer.
 
 The current stack I'm using can be seen below :
@@ -50,13 +49,14 @@ The current stack I'm using can be seen below :
 |:--:|
 | *The current stack* |
 
-[1] Some details where omitted. In reality, the temperature map pass by a Scale_Map function to make the futur biomes bigger.
+[1] Just like for forecast map in the news !\
+[2] Some details where omitted. In reality, the temperature map pass by a Scale_Map function to make the futur biomes bigger.
 
 ### dijkstra's algorithm
 
  ![Dijkstra](./doc/Dijkstra_1.png) ![Dijkstra](./doc/Dijkstra_2.png)  \
  ![Dijkstra](./doc/Dijkstra_3.png) ![Dijkstra](./doc/Dijkstra_4.png) \
-*Dijkstra's algorithm visualization. Notice of the third map has no path has both ending points are on different islands.*
+*Dijkstra's algorithm visualization. Notice how the third map has no path as both ending points are on different islands.*
 
 #### Introduction
 
@@ -76,7 +76,7 @@ Finally, I could not hash raw (R, G, B) values. Indeed, GtkAda use floats in the
 Consequently, to compensate for this, I had to create a Flatten function that would truncate a float x to its first decimal. Thus, if some color was represented as (0.xy, 0.ab, 0.uv) in the GtkAda format and (0.xy', 0.ab', 0.uv') in the Image_IO format [1], then the Flatten function would cause both colors to be represented as (0.x, x.a, 0.u) which could then be hashed properly.
 
 The costs of each pixel's traversal was calculated with two variables in mind : The climate temperature and the speed. As an exemple, a forest is more difficult to traverse than a desert, but it has a lower temperature.
-Moreover, the temperature part of the cost must be quadratic : in both extremes, the cost is the same; whereas the speed is linear. The more difficult the terrain, the slower the traversal is. Finally, a hill terrain slightly makes the cost go up whatever the original terrain. As such, for a temperature and speed (x, y), the associated cost is :
+Moreover, the temperature part of the cost must be quadratic : in both extremes, the cost is the same. On the other hand, the speed is linear. The more difficult the terrain, the slower the traversal is. Finally, a hill terrain slightly makes the cost go up whatever the original terrain. As such, for a temperature and speed (x, y), the associated cost is :
 
 ``` C(x, y) = aT(x) + bS(y)```\
 with\
@@ -90,13 +90,12 @@ Dijkstra's algorithm use a few lists to store vertices and costs. For both the C
 - The Queue : Place 1 for pixel on the queue, 0 on those not in it.
 
 The queue, being a bit special, is to be more discussed about.
-The queue is a NxN+1 list of Integers. It has the value 1 if a pixel is in the queue, 0 if not. The last element of the queue is the number of elements in the queue.
-
-For the queue, I decided for an array instead of a vector because it allowed for a faster neighbours search. If I had used a vector, I would have had a O(M.N) in time (N is the queue size, M the size until we reach a neighbour, M <= N) while I could here have a O(1).
+The queue is a NxN+1 list of Integers. It has the value 1 if a pixel is in the queue, 0 if not. The last element of the queue is the number of elements still in the queue.\
+For the queue, I decided for an array instead of a vector because it allowed for a faster neighbours search. If I had used a vector, I would have had a O(CM.N) in time (N is the queue size, M the size until we reach a neighbour, M <= N and C is the number of neighbours to search for) while I could here have a O(1).
 However, this has the downside of having a O(N) [2] for the search of the minimum, instead of a O(1) for the vector implementation.
 
 
-[1] After converting UInt8 to Float.
+[1] After converting UInt8 to Float.\
 [2] With my current implementation.
 
 ## Configuration
