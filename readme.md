@@ -43,9 +43,9 @@ The processus - the stack - is so named as it is a composition of many layers, e
 - Place_Topography : Using the same general algorithm as the [Generate_Baseline function (L.462)](./src/model/generation/generation.adb), it creates a general map
 for the ocean and the hills that are then placed on top of the previous layer.
 
-The current stack I'm using can be seen below :
+The current stack I'm using can be seen below (it _is_ a bit simplified) :
 
-| ![The stack](./doc/stack.jpg) |
+| ![The stack](./doc/stack.png) |
 |:--:|
 | *The current stack* |
 

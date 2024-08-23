@@ -726,6 +726,7 @@ package body Generation is
       Remove_Too_Much
         (Rocks, From => Ocean, Source => "Hills_4.png", Current_Zoom => x16,
          Dilatation_Number => 6);
+
       Zoom
         (Source      => "Hills_4.png", Multiply => x16,
          Destination => "Hills_5.png");

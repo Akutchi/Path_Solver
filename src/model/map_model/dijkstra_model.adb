@@ -126,14 +126,14 @@ package body Dijkstra_Model is
    procedure Init_Queue (Data : Image_Data; Q : out Queue) is
    begin
 
-      Q (Q'Last) := Image_Z6 * Image_Z6;
+      Q (Q'Last) := Z6 * Z6;
 
       for I in Q'First .. Q'Last - 1 loop
 
          declare
 
-            X : constant Pos := Pos (I / Image_Z6);
-            Y : constant Pos := Pos (I mod Image_Z6);
+            X : constant Pos := Pos (I / Z6);
+            Y : constant Pos := Pos (I mod Z6);
 
             Color : constant Gdk_RGBA :=
               Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, X, Y));
@@ -212,9 +212,9 @@ package body Dijkstra_Model is
       Last  : constant Integer := Integer (Q'Last - 1);
 
       v : constant Integer := u + 1;
-      w : constant Integer := u - Image_Z6;
+      w : constant Integer := u - Z6;
       s : constant Integer := u - 1;
-      t : constant Integer := u + Image_Z6;
+      t : constant Integer := u + Z6;
 
    begin
 
@@ -244,8 +244,8 @@ package body Dijkstra_Model is
 
    function Cost (Data : Image_Data; Costs : Map; v : Natural) return Float is
 
-      X : constant Pos      := Pos (v / Image_Z6);
-      Y : constant Pos      := Pos (v mod Image_Z6);
+      X : constant Pos      := Pos (v / Z6);
+      Y : constant Pos      := Pos (v mod Z6);
       C : constant Gdk_RGBA :=
         Flatten (Color_Info_To_GdkRGBA (Get_Pixel_Color (Data, X, Y)));
 
@@ -262,10 +262,10 @@ package body Dijkstra_Model is
    is
 
       Source : constant Natural :=
-        Natural (Dijkstra_Info.Start_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.Start_Point.X) * Z6 +
         Natural (Dijkstra_Info.Start_Point.Y);
       Target : constant Natural :=
-        Natural (Dijkstra_Info.End_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.End_Point.X) * Z6 +
         Natural (Dijkstra_Info.End_Point.Y);
 
       Image : Handle;
@@ -320,10 +320,10 @@ package body Dijkstra_Model is
       Path : Shortest_Path.Vector;
 
       Source : constant Natural :=
-        Natural (Dijkstra_Info.Start_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.Start_Point.X) * Z6 +
         Natural (Dijkstra_Info.Start_Point.Y);
       Target : constant Natural :=
-        Natural (Dijkstra_Info.End_Point.X) * Image_Z6 +
+        Natural (Dijkstra_Info.End_Point.X) * Z6 +
         Natural (Dijkstra_Info.End_Point.Y);
 
       u : Natural := Target;
@@ -333,7 +333,7 @@ package body Dijkstra_Model is
       if Prev (u) /= -1 or else Prev (u) = Source then
 
          while Prev (u) /= -1 loop
-            Append (Path, (Pos (u / Image_Z6), Pos (u mod Image_Z6)));
+            Append (Path, (Pos (u / Z6), Pos (u mod Z6)));
             u := Prev (u);
 
          end loop;
