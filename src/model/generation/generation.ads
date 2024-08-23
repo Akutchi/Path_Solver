@@ -9,7 +9,7 @@
 --  create a new image. For exemple, Add_Island or Remove_Too_Much act on an --
 --  image to modify it.                                                      --
 --                                                                           --
---  It is here supposed that the created images are square images.           --                                                                         --
+--  It is here supposed that the created images are square images.           --
 --                                                                           --
 --  [1] https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/   --
 --                                                                           --

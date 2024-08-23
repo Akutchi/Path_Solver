@@ -1,14 +1,12 @@
-with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
-
 with Ada.Text_IO; use Ada.Text_IO;
+
+with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Numerics.Float_Random;
 
 package body Math_Operations is
 
    package Float_Calculations is new Ada.Numerics.Generic_Elementary_Functions
      (Float_Type => Float);
-
-   use Float_Calculations;
 
    --------------------
    -- Data_To_Vector --
@@ -78,7 +76,7 @@ package body Math_Operations is
    function norm (Point : Vector) return Float is
    begin
 
-      return Sqrt (Point.X**2 + Point.Y**2 + Point.Z**2);
+      return Float_Calculations.Sqrt (Point.X**2 + Point.Y**2 + Point.Z**2);
    end norm;
 
    ---------------
@@ -115,7 +113,7 @@ package body Math_Operations is
    function Random_2D_Unit_Gradient return Vector is
 
       Gradient : Vector;
-      G        : Generator;
+      G        : Ada.Numerics.Float_Random.Generator;
 
       function Scale (x : Float) return Float;
       --  [0; 1] => [-1; 1] (for full unit circle)
@@ -127,9 +125,9 @@ package body Math_Operations is
 
    begin
 
-      Reset (G);
-      Gradient.X := Scale (Float (Random (G)));
-      Gradient.Y := Scale (Float (Random (G)));
+      Ada.Numerics.Float_Random.Reset (G);
+      Gradient.X := Scale (Float (Ada.Numerics.Float_Random.Random (G)));
+      Gradient.Y := Scale (Float (Ada.Numerics.Float_Random.Random (G)));
       Gradient.Z := 0.0;
 
       return Normalize (Gradient);

@@ -1,14 +1,15 @@
 with Gtk.Main; use Gtk.Main;
 
-with Main_Windows;   use Main_Windows;
-with Canvas;         use Canvas;
 with Generation;     use Generation;
 with Dijkstra_Model; use Dijkstra_Model;
+
+with Main_Windows;
+with Canvas;
 
 procedure Path_Solver is
 
    Win           : Main_Windows.Main_Window;
-   Main_Canvas   : Image_Canvas;
+   Main_Canvas   : Canvas.Image_Canvas;
    Dijkstra_Info : Cost_Map;
    Prev          : Prev_Array;
    Path          : Shortest_Path.Vector;
@@ -30,11 +31,11 @@ begin
    Main_Windows.Gtk_New (Win);
    Canvas.Gtk_New (Main_Canvas);
 
-   Initial_Setup (Main_Canvas);
-   Realize (Main_Canvas);
+   Canvas.Initial_Setup (Main_Canvas);
+   Canvas.Realize (Main_Canvas);
 
-   Add (Win, Main_Canvas);
-   Show_All (Win);
+   Main_Windows.Add (Win, Main_Canvas);
+   Main_Windows.Show_All (Win);
    Main;
 
 end Path_Solver;

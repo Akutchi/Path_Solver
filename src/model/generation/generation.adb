@@ -396,14 +396,12 @@ package body Generation is
       return Natural
    is
 
-      Choice  : Ada.Numerics.Float_Random.Uniformly_Distributed;
-      Visited : Natural := 0;
+      Choice  : constant Ada.Numerics.Float_Random.Uniformly_Distributed :=
+        Choose_Zone_Biome;
+      Visited : Natural                                                  := 0;
       Biome   : BiomeGroup;
 
    begin
-
-      Ada.Numerics.Float_Random.Reset (Gb);
-      Choice := Ada.Numerics.Float_Random.Random (Gb);
 
       case T is
 

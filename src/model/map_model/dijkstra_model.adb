@@ -9,7 +9,7 @@ package body Dijkstra_Model is
    -- Init_Costs --
    ----------------
 
-   procedure Init_Costs (C_Hash : out Map) is
+   procedure Init_Costs (C_Hash : out Cost_Hash.Map) is
 
       function T (x : Float) return Float;
       function S (x : Float) return Float;
@@ -242,7 +242,9 @@ package body Dijkstra_Model is
    -- Costs --
    -----------
 
-   function Cost (Data : Image_Data; Costs : Map; v : Natural) return Float is
+   function Cost
+     (Data : Image_Data; Costs : Cost_Hash.Map; v : Natural) return Float
+   is
 
       X : constant Pos      := Pos (v / Z6);
       Y : constant Pos      := Pos (v mod Z6);
@@ -333,7 +335,7 @@ package body Dijkstra_Model is
       if Prev (u) /= -1 or else Prev (u) = Source then
 
          while Prev (u) /= -1 loop
-            Append (Path, (Pos (u / Z6), Pos (u mod Z6)));
+            Shortest_Path.Append (Path, (Pos (u / Z6), Pos (u mod Z6)));
             u := Prev (u);
 
          end loop;
@@ -383,11 +385,13 @@ package body Dijkstra_Model is
             end loop;
          end loop;
 
-         if not Is_Empty (Path) then
+         if not Shortest_Path.Is_Empty (Path) then
 
             for p of Path loop
 
-               if p = First_Element (Path) or else p = Last_Element (Path) then
+               if p = Shortest_Path.First_Element (Path)
+                 or else p = Shortest_Path.Last_Element (Path)
+               then
                   Color := Black;
                else
                   Color := Dark_Red;

@@ -49,10 +49,6 @@ package Dijkstra_Model is
    package Shortest_Path is new Ada.Containers.Indefinite_Vectors
      (Index_Type => Positive, Element_Type => Point);
 
-   use Cost_Hash;
-   use Neighbours;
-   use Shortest_Path;
-
    INFINITY : Float   := 1_000.0;
    Image_Z6 : Natural := Z6 - 1;
 
@@ -63,7 +59,7 @@ package Dijkstra_Model is
 
    type Cost_Map is record
 
-      Costs       : Map;
+      Costs       : Cost_Hash.Map;
       Start_Point : Point;
       End_Point   : Point;
    end record;
@@ -82,7 +78,7 @@ package Dijkstra_Model is
 
 private
 
-   procedure Init_Costs (C_Hash : out Map);
+   procedure Init_Costs (C_Hash : out Cost_Hash.Map);
    procedure Init_Points (Data : Image_Data; C_Map : out Cost_Map);
    procedure Init_Queue (Data : Image_Data; Q : out Queue);
 

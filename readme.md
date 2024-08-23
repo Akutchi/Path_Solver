@@ -15,12 +15,12 @@ As it is my first time using gtkAda, I extensively relied on
 
 The project use Alire as its main compiling tool.
 
-To install Alire, please download the [binary file](https://alire.ada.dev/) and unpack it somewhere. Then, add Alire to the path with
+To install Alire, please download the [binary file](https://alire.ada.dev/) and unpack it somewhere. Then, add Alire to the path with\
 ```export PATH="<PATH_TO_EXTRACTED>/bin/:$PATH"``` (you can make it permanent by placing this in the .profile).
 
 ### Dependency
 
-To run, the project must use some dependencies. To install them using alire, please run the command ```alr with <Dependency>```.
+To run, the project must use some dependencies. To install them using alire, please run the command\ ```alr with <Dependency>```.
 The graph of all the project's dependencies can be found below.
 
 | ![dependency_graph](./doc/dependency_graph.jpg) |
@@ -49,7 +49,7 @@ There is currently to binaries associated with the project :
 The first part of the project is to generate a map on which the algorithm will be able to evolve later on.
 For this, I relied on the pre-existing minecraft algorithm described in [this article](https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/). As such, the terminology and the description pictures' will be similar.
 
-To generate our map, I use what I came to call the " Zooming principle ". I start with a view of the world as far aways as possible (maximum zoomed out) and progressively zoom in has I add more features. This technic is useful because it allows for a progressive creation of many details as each new map has double the number of pixels as the last.
+To generate our map, I use what I came to call the " Zooming principle ". I start with a view of the world as far aways as possible (maximum zoomed out) and progressively zoom in as I add more features. This technic is useful because it allows for a progressive creation of many details as each new map has double the number of pixels as the last.
 
 #### Stack
 

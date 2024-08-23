@@ -28,14 +28,6 @@ package Random_Position is
    package Random_Z6 is new Ada.Numerics.Discrete_Random (Pos_Z6);
    package Random_Z7 is new Ada.Numerics.Discrete_Random (Pos_Z7);
 
-   use Random_Z1;
-   use Random_Z2;
-   use Random_Z3;
-   use Random_Z4;
-   use Random_Z5;
-   use Random_Z6;
-   use Random_Z7;
-
    GZ1 : Random_Z1.Generator;
    GZ2 : Random_Z2.Generator;
    GZ3 : Random_Z3.Generator;
