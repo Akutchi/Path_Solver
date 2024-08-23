@@ -14,7 +14,6 @@
 ------------------------------------------------------------------------------
 
 with Interfaces;
-with Interfaces.C;
 
 with Glib;     use Glib;
 with Gdk.RGBA; use Gdk.RGBA;
@@ -24,14 +23,6 @@ with Image_IO; use Image_IO;
 with Random_Position; use Random_Position;
 
 package RGBA is
-
-   package C renames Interfaces.C;
-   use type C.int;
-
-   function system (command : C.char_array) return C.int with
-     Import, Convention => C;
-
-   result : C.int;
 
    Image_Destination      : constant String := "../layer_templates/";
    Pixel_Type             : constant String := "../layer_templates/res.txt";

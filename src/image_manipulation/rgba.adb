@@ -1,5 +1,5 @@
-with Ada.Strings;       use Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Image_IO.Holders;    use Image_IO.Holders;
+with Image_IO.Operations; use Image_IO.Operations;
 
 package body RGBA is
 
@@ -38,23 +38,17 @@ package body RGBA is
 
    procedure Create_Image (Name : String; Zoom : Positive) is
 
-      To_String_Zoom : constant String :=
-        Trim (Positive'Image (Zoom), Ada.Strings.Left);
-
-      Size_String : constant String := To_String_Zoom & " " & To_String_Zoom;
-
-      Full_Cmd : constant String :=
-        "python3 " & Relative_Path_From_Bin & "create_image.py " &
-        Image_Destination & " " & Name & " " & Size_String;
-
-      create_image_cmd : aliased constant C.char_array := C.To_C (Full_Cmd);
+      Image : Handle;
 
    begin
 
-      result := system (create_image_cmd);
-      if result /= 0 then
-         raise Program_Error with "Exit code:" & result'Image;
-      end if;
+      Create (Image, Zoom, Zoom);
+
+      declare
+         Data : constant Image_Data := Image.Value;
+      begin
+         Write_PNG (Image_Destination & Name, Data);
+      end;
 
    end Create_Image;
 
