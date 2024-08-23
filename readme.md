@@ -9,6 +9,35 @@ with an ada implementation ([gtkada](https://github.com/AdaCore/gtkada) for the 
 As it is my first time using gtkAda, I extensively relied on
 [the examples](https://github.com/AdaCore/gtkada/tree/master/testgtk) provided.
 
+## Configuration
+
+### Introduction
+
+The project use Alire as its main compiling tool.
+
+To install Alire, please download the [binary file](https://alire.ada.dev/) and unpack it somewhere. Then, add Alire to the path with
+```export PATH="<PATH_TO_EXTRACTED>/bin/:$PATH"``` (you can make it permanent by placing this in the .profile).
+
+### Dependency
+
+To run, the project must use some dependencies. To install them using alire, please run the command ```alr with <Dependency>```.
+The graph of all the project's dependencies can be found below.
+
+| ![dependency_graph](./doc/dependency_graph.jpg) |
+|:--:|
+| *The project's dependency graph* |
+
+### Build
+
+To build the project, run ```alr build``` in the project folder, or
+alternatively ```alr run``` to build and execute. The generated binary file is located in ./bin and must be executed here.
+
+There is currently to binaries associated with the project :
+- path_solver : the main program visualizing Dijkstra's algorithm
+- generation_main : the program that creates the procedural map. It is a test file for developpement purposes. Its result can be seen on the last layer in [layer/templates](./layer_templates/).
+
+## Project's details and implementation choices.
+
 ### World Generation
 
  ![The world](./doc/Layer_6_160.png) ![The world](./doc/Layer_6_160_2.png)  \
@@ -34,7 +63,7 @@ The processus - the stack - is so named as it is a composition of many layers, e
 
 - Init_Temperature_Z5 : Initialize a temperature map where each point has a value from 1 to 5 which represent the zone general biome. The map is generated using [perlin noise](https://en.wikipedia.org/wiki/Perlin_noise) which allows for a somewhat continuous transition and a "temperature feel" to the map [1].
 
-- Smooth_Temperature : Smooth the temperature map for less abrupt variations using kernel image gradients. Indeed, because of perlin noise's caracteristic at grid point, there is a null gradient resulting in a singularity, which feels off when plotted at the biome layer.
+- Smooth_Temperature : Smooth the temperature map for less abrupt variations using kernel image gradients.
 
 - Remove_Too_Much : This is a [dilation / erosion operator](https://en.wikipedia.org/wiki/Mathematical_morphology#Basic_operators) (depending on what you choose to erode) that I initialy created to remove small patch of ocean (think of a 1x1 ocean in land).
 
@@ -66,14 +95,7 @@ While I could have implemented a faster algorithm with the use of heaps (see the
 
 #### Costs
 
-To implement the costs of each environment pixel, I decided to go for a hash map instead of a cost map. This has the advantage of being scalable. Indeed, the hash map is O(1) in memory because it stay the same whatever the size of the map is. Moreover, it is [O(log (N))](<https://learn.adacore.com/courses/intro-to-ada/chapters/standard_library_containers.html#hashed-maps>) in average in access time, which is probably faster than a 2D matrix.
-
-The hash function, however, had to be redefined. Ada provide a Standard hashing for Strings in Ada.Strings.Hash. However, I worked with the (R, G, B) format, which this hash is not adequate for.
-Thus, the hasing function I used was :
-```(Red) + (Green * 2^8) + (Blue * 2^16)```
-
-Finally, I could not hash raw (R, G, B) values. Indeed, GtkAda use floats in the range [0, 1] while Image_IO - which I used for the Image manipulation - use integer in the range [0, 255]. Thus, when converting from one to the other, there is loss of information which could result in a " key not in map error".
-Consequently, to compensate for this, I had to create a Flatten function that would truncate a float x to its first decimal. Thus, if some color was represented as (0.xy, 0.ab, 0.uv) in the GtkAda format and (0.xy', 0.ab', 0.uv') in the Image_IO format [1], then the Flatten function would cause both colors to be represented as (0.x, x.a, 0.u) which could then be hashed properly.
+To implement the costs of each environment pixel, I decided to go for a hash map instead of a cost map. This has the advantage of being scalable. Indeed, the hash map is O(1) in memory because it stay the same whatever the size of the map is. Moreover, it is [O(log (N))](<https://learn.adacore.com/courses/intro-to-ada/chapters/standard_library_containers.html#hashed-maps>) in average in access time, which is probably faster than a 2D matrix. For more details about the hash function see [here](./src/model/map_model/dijkstra_model.ads).
 
 The costs of each pixel's traversal was calculated with two variables in mind : The climate temperature and the speed. As an exemple, a forest is more difficult to traverse than a desert, but it has a lower temperature.
 Moreover, the temperature part of the cost must be quadratic : in both extremes, the cost is the same. On the other hand, the speed is linear. The more difficult the terrain, the slower the traversal is. Finally, a hill terrain slightly makes the cost go up whatever the original terrain. As such, for a temperature and speed (x, y), the associated cost is :
@@ -92,37 +114,10 @@ Dijkstra's algorithm use a few lists to store vertices and costs. For both the C
 The queue, being a bit special, is to be more discussed about.
 The queue is a NxN+1 list of Integers. It has the value 1 if a pixel is in the queue, 0 if not. The last element of the queue is the number of elements still in the queue.\
 For the queue, I decided for an array instead of a vector because it allowed for a faster neighbours search. If I had used a vector, I would have had a O(CM.N) in time (N is the queue size, M the size until we reach a neighbour, M <= N and C is the number of neighbours to search for) while I could here have a O(1).
-However, this has the downside of having a O(N) [2] for the search of the minimum, instead of a O(1) for the vector implementation.
+However, this has the downside of having a O(N) [1] for the search of the minimum, instead of a O(1) for the vector implementation.
 
+[1] With my current implementation.
 
-[1] After converting UInt8 to Float.\
-[2] With my current implementation.
-
-## Configuration
-
-### Introduction
-
-The project use Alire as its main compiling tool.
-
-To install Alire, please download the [binary file](https://alire.ada.dev/) and unpack it somewhere. Then, add Alire to the path with
-```export PATH="<PATH_TO_EXTRACTED>/bin/:$PATH"``` (you can make it permanent by placing this in the .profile).
-
-### Dependency
-
-To run, the project must use some dependencies. Apart from those below - and which can be installed in the project's folder using ```alr with <Dependency>``` - the project also use a python script. Thus, one must have python3 installed on their computer for it to properly run.
-
-| ![dependency_graph](./doc/dependency_graph.jpg) |
-|:--:|
-| *The project's dependency graph* |
-
-### Build
-
-To build the project, run ```alr build``` in the project folder, or
-alternatively ```alr run``` to build and execute. The generated binary file is located in ./bin and must be executed here.
-
-There is currently to binaries associated with the project :
-- path_solver : the main program visualizing Dijkstra's algorithm
-- generation_main : the program that creates the procedural map. It is a test file for developpement purposes. Its result can be seen on the last layer in [layer/templates](./layer_templates/).
 
 
 

@@ -36,15 +36,9 @@ package Temperature_Map is
      (Temperature_Map : out Temperature_Map_Z5);
 
    procedure Smooth_Temperature (Temperature_Map : out Temperature_Map_Z5);
-   --  Two temperature need smoothing if they are two extreme for one another.
-   --
-   --  With the current cnfiguration, that means if :
-   --  Warm (int 1) is close to Cold (3) or Freezing (4) Or
-   --  Freezing (int 4) is close to Temperate (2) or Warm (1).
-   --
-   --  Thus it is possible to check if the difference is greater than 2.
-   --  And it is possible to check for a neighbourhood by checking if the
-   --  difference is greater than 4 in non Border case, 2 otherwise.
+   --  Because of perlin noise's caracteristic at grid point, there is a null
+   --  gradient resulting in a singularity, which feels off when plotted at the
+   --  biome layer.
 
    procedure Print_Map_Z5 (T_M : Temperature_Map_Z5);
 

@@ -1,3 +1,31 @@
+-------------------------------------------------------------------------------
+--                                                                           --
+--  This file is about the implementation of the dijkstra's algorithm.       --
+--                                                                           --
+--  For storing each pixel's cost, I created a hash map instead of a matrix. --
+--                                                                           --
+--  The hash function, however, had to be redefined. Ada provide a Standard  --
+--  hashing for Strings in Ada.Strings.Hash. However, I worked with the      --
+--  (R, G, B) format, which this hash is not adequate for. Thus, the hasing  --
+--  function I used was : (Red) + (Green * 2^8) + (Blue * 2^16).             --
+--                                                                           --
+--  Moreover, I could not hash raw (R, G, B) values. Indeed, GtkAda use      --
+--  floats in the range [0, 1] while Image_IO - which I used for the Image   --
+--  manipulation - use integer in the range [0, 255]. Thus, when converting  --
+--  from one to the other, there is loss of information which could result   --
+--  in a "key not in map error". Consequently, to compensate for this, I     --
+--  had to create a Flatten [1] function that would truncate a float x to    --
+--  its first decimal.                                                       --
+--  Thus, if some color was represented as (0.xy, 0.ab, 0.uv) in the GtkAda  --
+--  format and (0.xy', 0.ab', 0.uv') in the Image_IO format [2], then the    --
+--  Flatten function would cause both colors to be represented as            --
+--  (0.x, x.a, 0.u) which could then be hashed properly from both sides.     --
+--                                                                           --
+--  [1] See src/rgba.adb                                                     --
+--  [1] After converting UInt8 to Float.                                     --
+--                                                                           --
+-------------------------------------------------------------------------------
+
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Containers.Indefinite_Vectors;
 

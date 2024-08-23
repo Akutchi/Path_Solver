@@ -1,12 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                                                                          --
--- Gtk.RGBA and PIL do not have the same way to handle RGB colors.          --
+-- Gtk.RGBA and Image_IO do not have the same way of handling RGB colors.   --
 -- The first use float (Gdouble) between 0.0 and 1.0 and the second integer --
 -- between 0 and 255.                                                       --
---                                                                          --
--- Moreover, in order for the python bindings to work, one must be          --
--- able to transform those value in strings.                                --
 --                                                                          --
 -- In general this package is about all manipulations that are used during  --
 -- the map generation.                                                      --
@@ -48,7 +44,7 @@ package RGBA is
    --  In the (R,G,B) integer format
 
    function Flatten (c : Gdk_RGBA) return Gdk_RGBA;
-   --  Round color components to nearest round float
+   --  truncate color components to their first decimal (e.g 0.29 -> 0.2)
 
    procedure Put_Pixel
      (Data : in out Image_Data; X, Y : Pos; Color : Gdk_RGBA);

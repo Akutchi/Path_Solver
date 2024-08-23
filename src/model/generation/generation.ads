@@ -1,18 +1,17 @@
 -------------------------------------------------------------------------------
 --                                                                           --
+--  This file, and the folder in general is my ada implementation of a       --
+--  minecraft-like world generator [1].                                      --
 --                                                                           --
--- This file, and the folder in general is my ada implementation of a        --
--- minecraft-like world generator [1].                                       --
+--  Each layer is a procedure which act on an image inside the               --
+--  layer_templates folder. It takes in an In_File and output and Out_File.  --
+--  There exists exceptions for procedure which I felt like didn't need to   --
+--  create a new image. For exemple, Add_Island or Remove_Too_Much act on an --
+--  image to modify it.                                                      --
 --                                                                           --
--- Each layer is a procedure which act on an image inside the                --
--- layer_templates folder. It takes in an In_File and output and Out_File.   --
--- The only exception being the Island layer which create the first map.     --
--- Each Stack is a list of procedure.                                        --
+--  It is here supposed that the created images are square images.           --                                                                         --
 --                                                                           --
--- It is here supposed that the created images are square images.            --
---                                                                           --
---                                                                           --
--- [1] https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/    --
+--  [1] https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/   --
 --                                                                           --
 -------------------------------------------------------------------------------
 
