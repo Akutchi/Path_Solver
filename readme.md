@@ -119,6 +119,17 @@ However, this has the downside of having a O(N) [1] for the search of the minimu
 [1] With my current implementation.
 
 
+## Lesson for me
+
+- Do not try to regroup - at least in ada or similar languages - modules first
+it could create circular dependencies.
+What I mean is, do not try to create a Generation.Random_XXX module; separate
+your files, create a lot of them, and you'll know after if you need to
+hierarchize them.
+You don't need to have finished the whole project to do this. Only when you
+have finished a task (represented here by a folder) and that you don't need to
+come to the folder again, can you do this.
+
 
 
 
